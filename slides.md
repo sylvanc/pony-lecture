@@ -468,7 +468,7 @@ Let's keep track of where we are.
 ```pony
 actor Person
   let _name: String // We have fields, just like a class does.
-  let _place: Place
+  let _place: Place // A lead _ means a private field or method.
 
   new create(name: String, place: Place) => // Constructors are named.
     _name = name // All our fields have to be initialised.
@@ -924,9 +924,10 @@ Pure actors can be an uncomfortable programming paradigm.
 
 Actors as functions: Erlang, Elixir
 
-* Messages are guaranteed to be delivered, but in no particular order.
+* Messages are guaranteed to be delivered.
+* Messages will be _enqueued_ in order when sending to a single actor on the same node.
 * The actor is a single function that must choose when to wait for a message.
-* When waiting on a message, the actor can wait for a particular kind of message (that is, the actor can _pattern match on its message queue_).
+* Messages might be _handled_ in any order: the actor can wait for a particular kind of message (that is, the actor can _pattern match on its message queue_).
 * All data is immutable, so no race conditions.
 * Actors are not garbage collected, and can crash, so actor references can be invalid.
 
