@@ -503,9 +503,11 @@ actor Place
 
   be depart(who: Person) => // A behaviour - async!
     _people.unset(who) // Add to the set of present persons.
+    for person in _people.values() do person.departed(who, this) end
 
   be arrive(who: Person) => // Another behaviour.
     _people.set(who) // Remove from the set.
+    for person in _people.values() do person.arrived(who, this) end
 ```
 
 ----
@@ -568,10 +570,42 @@ actor Person
 
 ----
 
-It's consistent!
+Message ordering #1: seems to work
 
-* <!-- .element: class="fragment"--> The cinema may handle Alice's depart message before or after the pub handles her arrive message.
-* <!-- .element: class="fragment"--> But a message from the pub to the cinema in response to Alice arriving will always be handled after the leave message.
+```seq
+participant Alice
+participant Cinema
+participant Pub
+participant Bob
+Alice->Cinema: depart(alice)
+Note over Cinema: depart(alice)
+Cinema->Bob: departed(alice)
+Note over Bob: departed(alice)
+Alice->Pub: arrive(alice)
+Note over Pub: arrive(alice)
+Pub->Bob: arrived(alice)
+Note over Bob: arrived(alice)
+```
+
+----
+
+Message ordering #2: Heisen-Alice
+
+```seq
+participant Alice
+participant Cinema
+participant Pub
+participant Bob
+Alice->Cinema: depart(alice)
+Alice->Pub: arrive(alice)
+Note over Pub: arrive(alice)
+Pub->Bob: arrived(alice)
+Note over Bob: arrived(alice)
+Note right of Bob: Bob sees Alice in two places!
+Note over Cinema: depart(alice)
+Cinema->Bob: departed(alice)
+Note over Bob: departed(alice)
+```
 
 ----
 
@@ -580,6 +614,64 @@ What's our message order guarantee?
 * <!-- .element: class="fragment"--> Messages are _causally ordered_.
 * <!-- .element: class="fragment"--> Every message an actor has ever received or sent is a _cause_ of any messages it sends.
 * <!-- .element: class="fragment"--> A message will always arrive _after_ any of its causes that are sent to the same destination.
+
+----
+
+What are the causes now?
+
+* <!-- .element: class="fragment"--> Arriving is a cause of of departing.
+* <!-- .element: class="fragment"--> Arriving is a cause of arrival notifications.
+* <!-- .element: class="fragment"--> Departing is a cause of departure notifications.
+* <!-- .element: class="fragment"--> Since causality is transitive, arriving is a cause of departure notifications.
+* <!-- .element: class="fragment"--> But arrival notifications are not a cause of departure notifications!
+
+----
+
+Let's use causality to make it consistent.
+
+```pony
+actor Person
+  ...
+  be move(to: Place) =>
+    _place.depart(this, to) // Depart takes an extra argument.
+    _place = to // We don't send an arrive message!
+
+actor Place
+  ...
+  be depart(who: Person, to: Place) => // Depart has an extra parameter.
+    _people.unset(who)
+    for person in _people.values() do person.departed(who, this) end
+    to.arrive(who) // The place we're departing sends the arrive message!
+```
+
+<!-- .element: class="fragment"--> Now, departure notifications are a cause of arriving, so departure notifications are also a cause of arrival notifications.
+
+----
+
+Message ordering #3: causal order
+
+```seq
+participant Alice
+participant Cinema
+participant Pub
+participant Bob
+Alice->Cinema: depart(alice, pub)
+Note over Cinema: depart(alice, pub)
+Cinema->Bob: departed(alice, cinema)
+Cinema->Pub: arrive(alice)
+Note over Pub: arrive(alice)
+Pub->Bob: arrived(alice, cinema)
+Note over Bob: departed(alice, pub)
+Note over Bob: arrived(alice, cinema)
+```
+
+----
+
+It's consistent!
+
+* <!-- .element: class="fragment"--> Bob will always be notified of Alice's departure before her arrival: no more Heisen-Alice.
+* <!-- .element: class="fragment"--> When Bob follows Alice to the pub, she will already be there.
+* <!-- .element: class="fragment"--> Causal messaging has no runtime cost, so we can make these guarantees for free.
 
 ---
 
@@ -693,6 +785,8 @@ Bob->Data: data.x = 2
 Alice->Data: let x' = data.x
 Note over Alice: x' == 2
 ```
+
+<!-- .element: class="fragment"--> This can really happen.
 
 ----
 
