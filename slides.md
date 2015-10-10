@@ -613,7 +613,96 @@ Is it safe to send data structures in messages?
 
 ----
 
-How can we make it safe to send data structures in messages?
+Example: data race
+
+```pony
+class Data
+  var x: U32 = 0
+  var y: U32 = 0
+```
+
+Let's say Alice does this:
+
+```pony
+let x' = data.x
+data.y = 1
+```
+
+And Bob does this:
+
+```pony
+let y' = data.y
+data.x = 2
+```
+
+<!-- .element: class="fragment"--> Can `x' == 2` and `y' == 1` ?
+
+----
+
+Data race ordering #1: sequential, seems to work
+
+```pony
+class Data
+  var x: U32 = 0
+  var y: U32 = 0
+```
+
+```seq
+Alice->Data: let x' = data.x
+Note over Alice: x' == 0
+Alice->Data: data.y = 1
+Bob->Data: let y' = data.y
+Note over Bob: y' == 1
+Bob->Data: data.x = 2
+```
+
+----
+
+Data race ordering #2: interleaved, might be broken
+
+```pony
+class Data
+  var x: U32 = 0
+  var y: U32 = 0
+```
+
+```seq
+Alice->Data: let x' = data.x
+Note over Alice: x' == 0
+Bob->Data: let y' = data.y
+Note over Bob: y' == 0
+Alice->Data: data.y = 1
+Bob->Data: data.x = 2
+```
+
+----
+
+Data race ordering #3: wait, what?!
+
+```pony
+class Data
+  var x: U32 = 0
+  var y: U32 = 0
+```
+
+```seq
+Alice->Data: data.y = 1
+Bob->Data: let y' = data.y
+Note over Bob: y' == 1
+Bob->Data: data.x = 2
+Alice->Data: let x' = data.x
+Note over Alice: x' == 2
+```
+
+----
+
+Data races can be surprising.
+
+<!-- .element: class="fragment"--> They cause a lot of hard-to-find bugs.
+
+----
+
+Can we make it safe to send data structures in messages?
 
 ----
 

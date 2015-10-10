@@ -29,13 +29,17 @@
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
 
+		<script src="lib/js/jquery-1.11.3.min.js"></script>
+		<script src="lib/js/raphael-min.js"></script>
+		<script src="lib/js/underscore-min.js"></script>
+		<script src="lib/js/sequence-diagram-min.js"></script>
+
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
 	</head>
 
 	<body>
-
 		<div class="reveal">
 
 			<!-- Any section element inside of this container is displayed as a slide -->
@@ -43,7 +47,7 @@
 				<section data-markdown="slides.md"
 				         data-separator="\n---\n"
 				         data-separator-vertical="\n----\n"
-				         data-separator-notes="^SNote:"
+				         data-separator-notes="^note:"
 				         data-charset="iso-8859-15">
 				</section>
 			</div>
@@ -54,7 +58,6 @@
 		<script src="js/reveal.js"></script>
 
 		<script>
-
 			// Full list of configuration options available at:
 			// https://github.com/hakimel/reveal.js#configuration
 			Reveal.initialize({
@@ -72,7 +75,8 @@
 					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/postprocess/postprocess.js' }
 				]
 			});
 

@@ -18,13 +18,27 @@
 		throw 'The reveal.js Markdown plugin requires marked to be loaded';
 	}
 
+	var markedOptions = {};
+	markedOptions.renderer = new marked.Renderer();
+	markedOptions.renderer.code = function( code, lang ) {
+		if( lang == 'escape' ) {
+			return '<div>' + code + '</div>';
+		} else if( lang == 'seq' ) {
+			return '<div><div class="seq">' + code + '</div></div>';
+		} else if( typeof lang !== 'undefined' ) {
+			return '<pre><code class=lang-' + lang + '>' + code + '</code></pre>';
+		} else {
+			return '<pre><code>' + code + '</code></pre>';
+		}
+	};
+
 	if( typeof hljs !== 'undefined' ) {
-		marked.setOptions({
-			highlight: function( lang, code ) {
-				return hljs.highlightAuto( lang, code ).value;
-			}
-		});
+		markedOptions.highlight = function( lang, code ) {
+			return hljs.highlightAuto( lang, code ).value;
+		}
 	}
+
+	marked.setOptions( markedOptions );
 
 	var DEFAULT_SLIDE_SEPARATOR = '^\r?\n---\r?\n$',
 		DEFAULT_NOTES_SEPARATOR = 'note:',
