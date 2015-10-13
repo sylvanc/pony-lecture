@@ -189,9 +189,9 @@ What about parallelism?
 
 ----
 
-Q: Wait, what? Why did you call it a _unit of execution_ instead of a _thread_?
+Q: Wait, what? Why did you call it a _unit of execution_ instead of a _thread_ or a _process_?
 
-<!-- .element: class="fragment"--> A: Because threads are just one expression of the idea of concurrent execution.
+<!-- .element: class="fragment"--> A: Because threads and processes are just expressions of the idea of concurrent execution.
 
 ----
 
@@ -224,6 +224,7 @@ actor PingPong
   var pongs: U32 = 0 // In a type, a 'var' is a field
   var partner: PingPong
 
+  // Ellipsis isn't real code: it means we've left something out.
   new create() => ... // Constructors have names
 
   new partner(that: PingPong) => ...
@@ -286,6 +287,20 @@ actor PingPong
 
 ----
 
+A Pony program begins with a `Main` actor.
+
+```pony
+actor Main
+  new create(env: Env) => // A Main actor is always passed an environment.
+    PingPong.partner(PingPong) // The default constructor is create().
+```
+
+* <!-- .element: class="fragment"--> The environment contains things that might be global state in other languages: command line arguments, environment variables, `stdin`, `stdout`, etc.
+* <!-- .element: class="fragment"--> Saying `PingPong` is syntactic sugar for `PingPong.create()`.
+* <!-- .element: class="fragment"--> In this case we don't need anything from the environment. We create two `PingPong` actors and pass the first one to the second one.
+
+----
+
 What's a message?
 
 <!-- .element: class="fragment"--> A message is a uni-directional asynchronous method call.
@@ -296,7 +311,7 @@ No, seriously, what's a message?
 
 * <!-- .element: class="fragment"--> Sending a message to an actor is like making a method call on an object.
 * <!-- .element: class="fragment"--> But it doesn't return a value to the caller (i.e. it's uni-directional).
-* <!-- .element: class="fragment"--> And the actor only promises to eventually respond to the message (i.e. it's  asynchronous).
+* <!-- .element: class="fragment"--> And the actor only promises to eventually react to the message (i.e. it's asynchronous).
 * <!-- .element: class="fragment"--> So a message is "fire and forget": when you send a message, you know something will happen... later.
 
 ----
@@ -313,20 +328,20 @@ actor PingPong
     partner.pong() // <-- Here it is!
 ```
 
-<!-- .element: class="fragment"--> Here, the name of the message is `pong` and it has no arguments. Notice that it can't return a value (unidirectional), and that the `partner` won't necessarily respond to the message immediately (asynchronous).
+<!-- .element: class="fragment"--> Here, the name of the message is `pong` and it has no arguments. Notice that it can't return a value (unidirectional), and that the `partner` won't necessarily react to the message immediately (asynchronous).
 
 ----
 
-How do actors respond to messages?
+How do actors react to messages?
 
-* <!-- .element: class="fragment"--> One actor handles one message at a time.
-* <!-- .element: class="fragment"--> But many actors can be handling messages simultaneously.
+* <!-- .element: class="fragment"--> One actor reacts to one message at a time.
+* <!-- .element: class="fragment"--> But many actors can be reacting to messages simultaneously.
 * <!-- .element: class="fragment"--> So actors are individually _sequential_...
 * <!-- .element: class="fragment"--> ...but collectively _parallel._
 
 ----
 
-Responding to a message is as simple as writing a method body.
+Reacting to a message is as simple as writing a method body.
 
 ```pony
 actor PingPong
@@ -337,7 +352,7 @@ actor PingPong
     pongs = pongs + 1 // We change our state!
 ```
 
-<!-- .element: class="fragment"--> Here, we respond to a `pong` message by incrementing our `pongs` count. We won't handle any other message until we've finished handling this one.
+<!-- .element: class="fragment"--> Here, we react to a `pong` message by incrementing our `pongs` count. We won't react to any other message until we've finished reacting to this one.
 
 ----
 
@@ -414,7 +429,7 @@ Actors are like small independent programs.
 
 <!-- .element: class="fragment"--> Each actor keeps track of only what it has to.
 
-<!-- .element: class="fragment"--> And responds to events as they are notified of them.
+<!-- .element: class="fragment"--> And reacts to events as they are notified of them.
 
 <!-- .element: class="fragment"--> This is sometimes called _communicating event loops_.
 
@@ -468,7 +483,7 @@ Let's keep track of where we are.
 ```pony
 actor Person
   let _name: String // We have fields, just like a class does.
-  let _place: Place // A lead _ means a private field or method.
+  let _place: Place // A leading _ means a private field or method.
 
   new create(name: String, place: Place) => // Constructors are named.
     _name = name // All our fields have to be initialised.
@@ -502,11 +517,11 @@ actor Place
   ...
 
   be depart(who: Person) => // A behaviour - async!
-    _people.unset(who) // Add to the set of present persons.
+    _people.unset(who) // Remove from the set of present persons.
     for person in _people.values() do person.departed(who, this) end
 
   be arrive(who: Person) => // Another behaviour.
-    _people.set(who) // Remove from the set.
+    _people.set(who) // Add to the set of present persons.
     for person in _people.values() do person.arrived(who, this) end
 ```
 
@@ -540,7 +555,7 @@ actor Person
 
 * <!-- .element: class="fragment"--> What if `move` is called while `move` is executing?
 * <!-- .element: class="fragment"--> If Alice is told to move to the cinema and to the pub at the same time, could she depart her current `_place` twice?
-* <!-- .element: class="fragment"--> Could Alice send arrive messages to both places, and randomly store one of them as her current `_place`?
+* <!-- .element: class="fragment"--> Could Alice send arrive messages to both places, departing neither, and randomly store one of them as her current `_place`?
 
 ----
 
@@ -609,7 +624,7 @@ Note over Bob: departed(alice)
 
 ----
 
-What's our message order guarantee?
+What's our message-order guarantee?
 
 * <!-- .element: class="fragment"--> Messages are _causally ordered_.
 * <!-- .element: class="fragment"--> Every message an actor has ever received or sent is a _cause_ of any messages it sends.
@@ -617,13 +632,13 @@ What's our message order guarantee?
 
 ----
 
-What are the causes now?
+What are the _causes_ in the Heisen-Alice problem?
 
-* <!-- .element: class="fragment"--> Arriving is a cause of of departing.
+* <!-- .element: class="fragment"--> Arriving is a cause of departing.
 * <!-- .element: class="fragment"--> Arriving is a cause of arrival notifications.
 * <!-- .element: class="fragment"--> Departing is a cause of departure notifications.
 * <!-- .element: class="fragment"--> Since causality is transitive, arriving is a cause of departure notifications.
-* <!-- .element: class="fragment"--> But arrival notifications are not a cause of departure notifications!
+* <!-- .element: class="fragment"--> But arrival _notifications_ are not a cause of departure notifications!
 
 ----
 
@@ -927,7 +942,7 @@ Actors as functions: Erlang, Elixir
 * Messages are guaranteed to be delivered.
 * Messages will be _enqueued_ in order when sending to a single actor on the same node.
 * The actor is a single function that must choose when to wait for a message.
-* Messages might be _handled_ in any order: the actor can wait for a particular kind of message (that is, the actor can _pattern match on its message queue_).
+* Messages might be _reacted to_ in any order: the actor can wait for a particular kind of message (that is, the actor can _pattern match on its message queue_).
 * All data is immutable, so no race conditions.
 * Actors are not garbage collected, and can crash, so actor references can be invalid.
 
@@ -1012,9 +1027,9 @@ actor PingPong
 
 ----
 
-Actors as object: JavaScript
+Actors as objects: JavaScript
 
-* Seriously! A JavaScript program responds to events (behaviour) in sequence.
+* Seriously! A JavaScript program reacts to events (behaviours) in sequence.
 * Typically, there is only one actor, but with WebWorkers, you can have more!
 * Messages are copied, so there are no data races.
 * Actors are not garbage collected, and can terminate, so actor references can be invalid.
