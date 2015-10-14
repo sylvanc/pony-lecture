@@ -341,7 +341,7 @@ actor PingPong
 How do actors react to messages?
 
 * <!-- .element: class="fragment"--> One actor reacts to one message at a time.
-* <!-- .element: class="fragment"--> But many actors can be reacting to messages simultaneously.
+* <!-- .element: class="fragment"--> But different actors can be reacting to different messages simultaneously.
 * <!-- .element: class="fragment"--> So actors are individually _sequential_...
 * <!-- .element: class="fragment"--> ...but collectively _parallel._
 
@@ -646,11 +646,53 @@ What's our message-order guarantee?
 
 What are the _causes_ in the Heisen-Alice problem?
 
-* <!-- .element: class="fragment"--> Arriving is a cause of departing.
-* <!-- .element: class="fragment"--> Arriving is a cause of arrival notifications.
-* <!-- .element: class="fragment"--> Departing is a cause of departure notifications.
-* <!-- .element: class="fragment"--> Since causality is transitive, arriving is a cause of departure notifications.
-* <!-- .element: class="fragment"--> But arrival _notifications_ are not a cause of departure notifications!
+----
+
+Departing is a cause of arriving.
+
+```pony
+actor Person
+  ...
+
+  be move(to: Place) =>
+    _place.depart(this) // The depart message is sent first.
+    to.arrive(this) // So it's a cause of the arrive message.
+    _place = to
+```
+
+----
+
+Departing is a cause of departure notifications.
+
+```pony
+actor Place
+  ...
+
+  be depart(who: Person) => // The depart message is received here.
+    _people.unset(who)
+    for person in _people.values() do person.departed(who, this) end
+    // So it's a cause of these departure notifications.
+```
+
+----
+
+Arriving is a cause of arrival notifications.
+
+```pony
+actor Place
+  ...
+
+  be arrive(who: Person) => // The arrive message is received here.
+    _people.set(who)
+    for person in _people.values() do person.arrived(who, this) end
+    // So it's a cause of these arrival notifications.
+```
+
+----
+
+Since causality is transitive, departing is also a cause of arrival notifications.
+
+<!-- .element: class="fragment"--> But departure _notifications_ are not a cause of arrival _notifications_!
 
 ----
 
@@ -710,7 +752,7 @@ It's consistent!
 What can a message contain?
 
 * <!-- .element: class="fragment"--> References to actors.
-* <!-- .element: class="fragment"--> References to data structures.
+* <!-- .element: class="fragment"--> References to objects.
 
 <!-- .element: class="fragment"--> That's it!
 
@@ -724,9 +766,9 @@ Is it safe to send actors in messages?
 
 ----
 
-Is it safe to send data structures in messages?
+Is it safe to send objects in messages?
 
-* <!-- .element: class="fragment"--> What if two actors try to write to the data structure at the same time?
+* <!-- .element: class="fragment"--> What if two actors try to write to the object at the same time?
 * <!-- .element: class="fragment"--> We could end up with some writes from each actor, resulting in inconsistent state.
 * <!-- .element: class="fragment"--> This is sometimes called a _data race_.
 * <!-- .element: class="fragment"--> It's definitely not safe.
@@ -824,23 +866,23 @@ Data races can be surprising.
 
 ----
 
-Can we make it safe to send data structures in messages?
+Can we make it safe to send objects in messages?
 
 ----
 
-We could copy the data structure when we send it.
+We could copy the object when we send it.
 
 * <!-- .element: class="fragment"--> Copying is expensive, in both time and memory.
-* <!-- .element: class="fragment"--> A copy doesn't have the same _identity_ as the original data structure.
+* <!-- .element: class="fragment"--> A copy doesn't have the same _identity_ as the original object.
 * <!-- .element: class="fragment"--> Some actor-model languages do this, but Pony doesn't.
 
 ----
 
-We could send _immutable_ data structures.
+We could send _immutable_ objects.
 
-* <!-- .element: class="fragment"--> Actors can read from, but not write to, the data structure.
-* <!-- .element: class="fragment"--> Is it safe for two actors to read from the data structure at the same time?
-* <!-- .element: class="fragment"--> Yes! The data structure stays consistent, so it's safe.
+* <!-- .element: class="fragment"--> Actors can read from, but not write to, the object.
+* <!-- .element: class="fragment"--> Is it safe for two actors to read from the object at the same time?
+* <!-- .element: class="fragment"--> Yes! The object stays consistent, so it's safe.
 
 ----
 
@@ -861,10 +903,10 @@ actor Place
 
 ----
 
-We could send _isolated, mutable_ data structures.
+We could send _isolated, mutable_ objects.
 
-* <!-- .element: class="fragment"--> Only one actor at a time can have a reference to an isolated data structure.
-* <!-- .element: class="fragment"--> Is it safe for the actor with the reference to read from and write to the data structures?
+* <!-- .element: class="fragment"--> Only one actor at a time can have a reference to an isolated object.
+* <!-- .element: class="fragment"--> Is it safe for the actor with the reference to read from and write to the object?
 * <!-- .element: class="fragment"--> Yes! There's no interference from other actors, so it's safe.
 
 ----
