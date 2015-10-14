@@ -14,6 +14,12 @@ What's a programming model?
 
 ----
 
+One way to think about programming models is as _styles_ of programming.
+
+<!-- .element: class="fragment"--> Some languages support just one model, but many support more than one.
+
+----
+
 First, there was a big sequence of instructions.
 
 ----
@@ -109,7 +115,7 @@ Functions.
 
 * Subroutines, procedures, etc.
 * ALGOL, later FORTRAN, etc.
-* Sometimes called structured programming.
+* Sometimes called structured programming, or procedural programming.
 
 ----
 
@@ -514,6 +520,7 @@ We'll add this to `Place`:
 
 ```pony
 actor Place
+  let _people: SetIs[Person] // The same set we had before.
   ...
 
   be depart(who: Person) => // A behaviour - async!
@@ -537,6 +544,9 @@ actor Person
     _place.depart(this) // Send a depart message to our old place.
     to.arrive(this) // Send an arrive message to our new place.
     _place = to // Keep track of where we are.
+
+  be departed(who: Person, from: Place) => ...
+  be arrived(who: Person, from: Place) => ...
 ```
 
 ----
@@ -581,7 +591,7 @@ actor Person
 ```
 
 * <!-- .element: class="fragment"--> If Alice leaves the cinema and goes to the pub, can someone see her in the pub and the cinema at the same time?
-* <!-- .element: class="fragment"--> If Bob sees Alice leave the cinema and follows her to the pub, will she already be at the pub?
+* <!-- .element: class="fragment"--> If Bob sees Alice leave the cinema and follows her to the pub, can he arrive at the pub before her?
 
 ----
 
@@ -592,14 +602,15 @@ participant Alice
 participant Cinema
 participant Pub
 participant Bob
+Note over Alice, Bob: Alice and Bob are in the cinema and see each other
 Alice->Cinema: depart(alice)
 Note over Cinema: depart(alice)
-Cinema->Bob: departed(alice)
-Note over Bob: departed(alice)
+Cinema->Bob: departed(alice, cinema)
+Note over Bob: departed(alice, cinema)
 Alice->Pub: arrive(alice)
 Note over Pub: arrive(alice)
-Pub->Bob: arrived(alice)
-Note over Bob: arrived(alice)
+Pub->Bob: arrived(alice, pub)
+Note over Bob: arrived(alice, pub)
 ```
 
 ----
@@ -611,15 +622,16 @@ participant Alice
 participant Cinema
 participant Pub
 participant Bob
+Note over Alice, Bob: Alice and Bob are in the cinema and see each other
 Alice->Cinema: depart(alice)
 Alice->Pub: arrive(alice)
 Note over Pub: arrive(alice)
-Pub->Bob: arrived(alice)
-Note over Bob: arrived(alice)
+Pub->Bob: arrived(alice, pub)
+Note over Bob: arrived(alice, pub)
 Note right of Bob: Bob sees Alice in two places!
-Note over Cinema: depart(alice)
-Cinema->Bob: departed(alice)
-Note over Bob: departed(alice)
+Note over Cinema: depart(alice, cinema)
+Cinema->Bob: departed(alice, cinema)
+Note over Bob: departed(alice, cinema)
 ```
 
 ----
@@ -670,6 +682,7 @@ participant Alice
 participant Cinema
 participant Pub
 participant Bob
+Note over Alice, Bob: Alice and Bob are in the cinema and see each other
 Alice->Cinema: depart(alice, pub)
 Note over Cinema: depart(alice, pub)
 Cinema->Bob: departed(alice, cinema)
