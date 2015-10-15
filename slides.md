@@ -384,12 +384,6 @@ Pony is open source: get involved!
 
 http://ponylang.org
 
-----
-
-Code along in your browser!
-
-http://sandbox.ponylang.org
-
 ---
 
 ## Why would I want an actor?
