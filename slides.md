@@ -595,7 +595,7 @@ actor Person
 
 It's consistent!
 
-* <!-- .element: class="fragment"--> Bob will always be notified of Alice's departure before her arrival: no more Heisen-Alice.
+* <!-- .element: class="fragment"--> Bob will always be notified of Alice's departure before her arrival.
 * <!-- .element: class="fragment"--> When Bob follows Alice to the pub, she will already be there.
 * <!-- .element: class="fragment"--> This works because messages are _causally ordered_.
 
