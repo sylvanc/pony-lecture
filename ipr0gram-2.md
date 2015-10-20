@@ -121,9 +121,13 @@ actor Main
 
 Let's try 10 actors, each sending 10 pings and receiving 10 pongs...
 
+<!-- .element: class="fragment"--> That's about 200 messages.
+
 ----
 
 Let's try 1000 actors, each sending 1000 pings and receiving 1000 pongs...
+
+<!-- .element: class="fragment"--> That's about 2 million messages.
 
 ----
 
@@ -253,6 +257,7 @@ What are the Erlang guarantees?
 * <!-- .element: class="fragment"--> Messages will be _enqueued_ in order between pairs of actors.
 * <!-- .element: class="fragment"--> Messages can be _reacted to_ in any order.
 * <!-- .element: class="fragment"--> All data is immutable, so no race conditions.
+* <!-- .element: class="fragment"--> But all data in messages is copied anyway.
 * <!-- .element: class="fragment"--> Actors are not garbage collected, and can crash, so actor references can be invalid.
 
 ----
@@ -295,9 +300,14 @@ Akka and JavaScript pattern match on a single message to determine how to react.
 
 ----
 
-TODO: summary slide for this chain
+Summary of Guarantees
 
-* causality and data-race freedom guarantees of each language
+Feature            | Pony   | JavaScript   | Akka | Erlang
+-------------------|--------|--------------|------|-------
+Data-race free?    | Yes    | Copies       | No   | Copies
+Message enqueuing? | Causal | Pair-ordered | Pair-ordered  | Pair-ordered
+Message handling?  | Causal | Pair-ordered | Usually pair-ordered | Any
+Actors GC'd?       | Yes    | No           | No   | No
 
 ---
 
@@ -532,3 +542,9 @@ actor Person
 ----
 
 TODO: more examples coming
+
+---
+
+TODO: summary
+
+How this stuff affects performance?
