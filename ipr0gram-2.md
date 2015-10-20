@@ -541,6 +541,114 @@ actor Person
 
 ----
 
+Concepts:
+
+* Aliasing iso as tag.
+* Recovery again.
+* Destructive read again.
+
+----
+
+[Example #6](adventure6/adv6.pony)
+
+```pony
+actor Main
+  new create(env: Env) =>
+    """
+    We start by putting Alice and Bob in the pub.
+    We give Alice a cinema ticket.
+    Then we tell Alice to give her cinema ticket to Bob.
+    """
+    let pub = Place("Pub")
+    let alice = Person("Alice", pub)
+    let bob = Person("Bob", pub)
+
+    let ticket = recover CinemaTicket("Minions") end
+    let ticket_id = ticket
+
+    alice.take(consume ticket)
+    // alice.take(ticket)
+    alice.give(bob, ticket_id)
+    // alice.give(bob, ticket)
+
+actor Person
+  let _name: String
+  let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  var _place: Place
+
+  new create(name: String, place: Place) =>
+    _name = name
+    _place = place
+    _place.arrive(this)
+
+  be take(thing: Thing iso) =>
+    _things.set(consume thing)
+
+  be give(whom: Person, thing: Thing tag) =>
+    try
+      let thing' = _extract(thing)
+      whom.take(consume thing')
+    end
+
+  fun ref _extract(thing: Thing tag): Thing iso^ ? =>
+    _things.extract(thing)
+
+  be arrived(who: Person, place: Place, from: (Place | None)) =>
+    None
+```
+
+----
+
+Concepts:
+
+* Functions on actors.
+* Private functions.
+* Partial functions.
+* Exception handling.
+* Ephemeral types.
+
+----
+
+[Example #6a](adventure6a/adv6a.pony)
+
+```pony
+actor Person
+  let _name: String
+  let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  var _place: Place
+
+  new create(name: String, place: Place) =>
+    _name = name
+    _place = place
+    _place.arrive(this)
+
+  be take(thing: Thing iso) =>
+    _things.set(consume thing)
+
+  be give(whom: Person, thing: Thing tag) =>
+    """
+    If we have the `thing` we're being asked to give away, extract it from our
+    set of things and tell the recipient to take it.
+    """
+    try
+      let thing' = _extract(thing)
+      whom.take(consume thing')
+    end
+
+  fun ref _extract(thing: Thing tag): Thing iso^ ? =>
+  // fun ref _extract(thing: Thing tag): Thing iso^ =>
+    """
+    Extract the `thing` from our set, returning an _ephemeral_ type.
+    What if it isn't there? What value can we return?
+    """
+    _things.extract(thing)
+
+  be arrived(who: Person, place: Place, from: (Place | None)) =>
+    None
+```
+
+----
+
 TODO: more examples coming
 
 ---
