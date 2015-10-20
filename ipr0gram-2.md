@@ -466,4 +466,69 @@ actor Main
 
 ----
 
+Concepts:
+
+* Actor constructors are asynchronous.
+* Causality.
+
+----
+
+[Example #5](adventure5/adv5.pony)
+
+```pony
+actor Main
+  new create(env: Env) =>
+    """
+    Now we have a pub, and we want to put Alice in the pub.
+    Because of causality, the first message Alice will ever send is to tell
+    the pub she has arrived.
+    And that message is a cause of every message Alice ever sends.
+    """
+    let pub = Place("Pub")
+    let alice = Person("Alice", pub)
+
+    // Are actors constructed in order?
+    // let bob = Person("Bob", pub)
+    // let charlotte = Person("Charlotte", pub)
+    // let dave = Person("Dave", pub)
+    // let elspeth = Person("Elspeth", pub)
+```
+
+----
+
+Conveniences:
+
+* Union types.
+* Default arguments.
+* Multiple assignment variables.
+
+----
+
+[Example #5a](adventure5a/adv5a.pony)
+
+```pony
+actor Person
+  let _name: String
+  let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  var _place: Place
+
+  new create(name: String, place: Place) =>
+    _name = name
+    _place = place
+    _place.arrive(this, place)
+    // _place.arrive(this, None)
+    // _place.arrive(this)
+
+  be arrived(who: Person, place: Place, from: (Place | None)) =>
+    """
+    This is a placeholder: here, we would react to someone arriving.
+    In this case, we only react to our own arrival.
+    """
+    if this is who then
+      _place = place
+    end
+```
+
+----
+
 TODO: more examples coming

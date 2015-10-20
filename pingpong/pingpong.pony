@@ -23,11 +23,11 @@ actor PingPong
   be ping(from: PingPong, print: Bool) =>
     _pings = _pings + 1
     from.pong(print)
-    if print then _out.write(ANSI.green() + "Ping... ") end
+    if print then _out.write(ANSI.green() + "Ping... " + ANSI.reset()) end
 
   be pong(print: Bool) =>
     _pongs = _pongs + 1
-    if print then _out.write(ANSI.red() + "Pong! ") end
+    if print then _out.write(ANSI.red() + "Pong! " + ANSI.reset()) end
 
 actor Main
   new create(env: Env) =>
