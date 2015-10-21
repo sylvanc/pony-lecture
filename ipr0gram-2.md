@@ -564,6 +564,47 @@ digraph {
 
 ----
 
+Advanced concepts:
+
+* Generic types.
+* Generic functions.
+* Operator overloading.
+* Viewpoint adapted types.
+* Aliased types.
+* Apply sugar.
+
+----
+
+[Advanced Example](https://raw.githubusercontent.com/CausalityLtd/ponyc/master/packages/collections/set.pony)
+
+```pony
+class HashSet[A, H: HashFunction[A!] val] is Comparable[HashSet[A, H] box]
+  """
+  A set, built on top of a HashMap. This is implemented as map of an alias of
+  a type to itself
+  """
+  let _map: HashMap[A!, A, H]
+
+  fun op_and[K: HashFunction[this->A!] val = H](that: this->HashSet[A, H]):
+    HashSet[this->A!, K]^
+  =>
+    """
+    Create a set with the elements that are in both this and that.
+    """
+    let r = HashSet[this->A!, K](size().min(that.size()))
+
+    for value in values() do
+      try
+        that(value)
+        r.set(value)
+      end
+    end
+    r
+```
+<!-- .element: class="stretch"-->
+
+----
+
 Some fun things we've covered:
 
 * Traits, actors, classes.
@@ -583,12 +624,20 @@ Some fun things we've covered:
 
 ----
 
+Some advanced things we've covered:
+
+* Generic types.
+* Generic functions.
+* Operator overloading.
+* Viewpoint adapted types.
+* Aliased types.
+* Apply sugar.
+
+----
+
 Some fun things we haven't covered:
 
-* Apply and update sugar.
-* Generic types.
-* Generic methods.
-* Viewpoint adapted types.
+* Update sugar.
 * Structural subtyping.
 * Pattern matching.
 * The foreign function interface.
