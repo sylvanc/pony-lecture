@@ -75,74 +75,40 @@ Can Pony programs crash?
 Let's modify the PingPong example.
 
 ```pony
-use "collections"
-use "time"
-use "options"
-use "term"
-
 actor PingPong
   let _out: OutStream
+  let _partner: PingPong
+  let _print: Bool
   var _pings: U64 = 0
   var _pongs: U64 = 0
 
-  new create(out: OutStream) =>
+  new create(pings: U64, print: Bool, out: OutStream) =>
     _out = out
-
-  be apply(players: Array[PingPong] val, pings: U64, seed: U64, print: Bool) =>
-    let len = players.size()
-    var random = seed
+    _partner = PingPong.partner(this, print, out)
+    _print = print
 
     for i in Range(0, pings) do
-      try players(random % len).ping(this, print) end
-      random = random.hash()
+      _partner.ping()
     end
 
-  be ping(from: PingPong, print: Bool) =>
+  new partner(that: PingPong, print: Bool, out: OutStream) =>
+    _out = out
+    _partner = that
+    _print = print
+
+  be ping() =>
     _pings = _pings + 1
-    from.pong(print)
-    if print then _out.write(ANSI.green() + "Ping... ") end
+    _partner.pong()
+    if _print then _out.write(ANSI.green() + "Ping... " + ANSI.reset()) end
 
-  be pong(print: Bool) =>
+  be pong() =>
     _pongs = _pongs + 1
-    if print then _out.write(ANSI.red() + "Pong! ") end
-
-actor Main
-  new create(env: Env) =>
-    var actors = U64(2)
-    var pings = U64(3)
-    var print = false
-
-    let options = Options(env) +
-      ("actors", "a", I64Argument) +
-      ("pings", "p", I64Argument) +
-      ("print", "", None)
-
-    for opt in options do
-      match opt
-      | ("actors", let arg: I64) => actors = arg.u64()
-      | ("pings", let arg: I64) => pings = arg.u64()
-      | ("print", None) => print = true
-      end
-    end
-
-    let players_iso = recover Array[PingPong](actors) end
-
-    for i in Range(0, actors) do
-      players_iso.push(PingPong(env.out))
-    end
-
-    let players = consume val players_iso
-    var random = Time.nanos().hash()
-
-    for player in players.values() do
-      player(players, pings, random, print)
-      random = random.hash()
-    end
+    if _print then _out.write(ANSI.red() + "Pong! " + ANSI.reset()) end
 ```
 
-<!-- .element: class="fragment"--> Instead of a pair of PingPong actors, this creates any number of them.
+<!-- .element: class="fragment"--> Instead of one pair of PingPong actors, this creates any number of pairs.
 
-<!-- .element: class="fragment"--> They each send some number of pings to their peers, randomly.
+<!-- .element: class="fragment"--> They each send some number of pings to their partner.
 
 ----
 
@@ -181,7 +147,6 @@ Concepts:
 * Constructors (named, sound).
 * Non-null type system.
 * Generic containers.
-* Single assignment variables.
 
 ----
 
@@ -195,7 +160,8 @@ actor Person
   new create(name': String) =>
     """
     All fields must be initialised by the time a constructor is done.
-    Until all fields are initialised, `this` is treated as a tag.
+    Until all fields are initialised, we can't do anything that might
+    try to read a field.
     """
     _name = name'
     // name()
@@ -208,6 +174,7 @@ actor Person
   fun name(): String =>
     _name
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -238,6 +205,17 @@ actor Person
   new two_names(first: String, last: String) =>
     _name = first + " " + last
 ```
+<!-- .element: class="stretch"-->
+
+----
+
+What types can we send in messages?
+
+* <!-- .element: class="fragment"--> Any _sendable_ type.
+* <!-- .element: class="fragment"--> These are `iso`, `val` and `tag`.
+* <!-- .element: class="fragment"--> `iso` is sendable because it is isolated. We know only one actor can read from or write to the object.
+* <!-- .element: class="fragment"--> `val` is sendable because it is immutable. We know _no_ actor can write to the object, so it's safe for _any_ actor to read from it.
+* <!-- .element: class="fragment"--> `tag` is sendable because it allows neither reading from nor writing to the object.
 
 ----
 
@@ -269,6 +247,7 @@ actor Person
     _things.set(consume thing)
     // _things.set(thing)
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -299,7 +278,7 @@ What can we do with an `iso^` that's different from an `iso`?
 
 Concepts:
 
-* Providing a trait.
+* Implementing a trait.
 * Function receiver capabilities.
 * Receiver capability subtyping.
 
@@ -313,7 +292,7 @@ trait Thing
 
 class CinemaTicket is Thing
   """
-  A CinemaTicket provides the Thing trait.
+  A CinemaTicket implements the Thing trait.
   """
   let film: String
 
@@ -327,6 +306,7 @@ class CinemaTicket is Thing
     """
     "cinema ticket"
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -348,11 +328,13 @@ actor Main
     We use `recover` to create an _isolated_ ticket.
     """
     let alice = Person("Alice")
-    let ticket = recover CinemaTicket("Minions") end
+    let ticket: CinemaTicket iso = recover CinemaTicket("Minions") end
+    // let ticket = recover CinemaTicket("Minions") end
     alice.take(consume ticket)
     // alice.take(ticket)
     // alice.take(CinemaTicket("Minions"))
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -383,6 +365,7 @@ actor Main
     // let dave = Person("Dave", pub)
     // let elspeth = Person("Elspeth", pub)
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -390,7 +373,7 @@ Conveniences:
 
 * Union types.
 * Default arguments.
-* Multiple assignment variables.
+* Single vs. multiple assignment variables.
 
 ----
 
@@ -418,6 +401,7 @@ actor Person
       _place = place
     end
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -476,6 +460,7 @@ actor Person
   be arrived(who: Person, place: Place, from: (Place | None)) =>
     None
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -526,6 +511,7 @@ actor Person
   be arrived(who: Person, place: Place, from: (Place | None)) =>
     None
 ```
+<!-- .element: class="stretch"-->
 
 ----
 
@@ -566,7 +552,7 @@ onmessage = function(e) {
 
 What are the JavaScript guarantees?
 
-* <!-- .element: class="fragment"--> Messages are ordered between pairs of actors, but not generally.
+* <!-- .element: class="fragment"--> Messages are ordered between pairs of actors (pair-ordered), but not generally.
 * <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
 * <!-- .element: class="fragment"--> Objects in messages are copied, so there are no data races.
 * <!-- .element: class="fragment"--> The identity of objects in messages is lost.
@@ -611,7 +597,7 @@ class PingPong() extends Actor {
 
 What are the Akka guarantees?
 
-* <!-- .element: class="fragment"--> Messages are usually ordered between pairs of actors, but not generally.
+* <!-- .element: class="fragment"--> Messages are usually pair-ordered.
 * <!-- .element: class="fragment"--> Some actors have mailboxes that support out-of-order messaging.
 * <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
 * <!-- .element: class="fragment"--> Objects in messages are __not__ data-race free.
@@ -648,7 +634,7 @@ pingpong(Pings, Pongs) ->
 
 What are the Erlang guarantees?
 
-* <!-- .element: class="fragment"--> Messages will be _enqueued_ in order between pairs of actors.
+* <!-- .element: class="fragment"--> Messages will be _enqueued_ in pair-order.
 * <!-- .element: class="fragment"--> Messages can be _reacted to_ in any order.
 * <!-- .element: class="fragment"--> All data is immutable, so no race conditions.
 * <!-- .element: class="fragment"--> But all data in messages is copied anyway.

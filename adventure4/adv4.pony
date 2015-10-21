@@ -13,7 +13,8 @@ actor Main
     We use `recover` to create an _isolated_ ticket.
     """
     let alice = Person("Alice")
-    let ticket = recover CinemaTicket("Minions") end
+    let ticket: CinemaTicket iso = recover CinemaTicket("Minions") end
+    // let ticket = recover CinemaTicket("Minions") end
     alice.take(consume ticket)
     // alice.take(ticket)
     // alice.take(CinemaTicket("Minions"))

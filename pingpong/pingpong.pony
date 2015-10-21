@@ -5,29 +5,37 @@ use "term"
 
 actor PingPong
   let _out: OutStream
+  let _partner: PingPong
+  let _print: Bool
   var _pings: U64 = 0
   var _pongs: U64 = 0
 
-  new create(out: OutStream) =>
+  new create(pings: U64, print: Bool, out: OutStream) =>
     _out = out
-
-  be apply(players: Array[PingPong] val, pings: U64, seed: U64, print: Bool) =>
-    let len = players.size()
-    var random = seed
+    _partner = PingPong.partner(this, pings, print, out)
+    _print = print
 
     for i in Range(0, pings) do
-      try players(random % len).ping(this, print) end
-      random = random.hash()
+      _partner.ping()
     end
 
-  be ping(from: PingPong, print: Bool) =>
-    _pings = _pings + 1
-    from.pong(print)
-    if print then _out.write(ANSI.green() + "Ping... " + ANSI.reset()) end
+  new partner(that: PingPong, pings: U64, print: Bool, out: OutStream) =>
+    _out = out
+    _partner = that
+    _print = print
 
-  be pong(print: Bool) =>
+    for i in Range(0, pings) do
+      _partner.ping()
+    end
+
+  be ping() =>
+    _pings = _pings + 1
+    _partner.pong()
+    if _print then _out.write(ANSI.green() + "Ping... " + ANSI.reset()) end
+
+  be pong() =>
     _pongs = _pongs + 1
-    if print then _out.write(ANSI.red() + "Pong! " + ANSI.reset()) end
+    if _print then _out.write(ANSI.red() + "Pong! " + ANSI.reset()) end
 
 actor Main
   new create(env: Env) =>
@@ -48,16 +56,6 @@ actor Main
       end
     end
 
-    let players_iso = recover Array[PingPong](actors) end
-
-    for i in Range(0, actors) do
-      players_iso.push(PingPong(env.out))
-    end
-
-    let players = consume val players_iso
-    var random = Time.nanos().hash()
-
-    for player in players.values() do
-      player(players, pings, random, print)
-      random = random.hash()
+    for i in Range(0, actors / 2) do
+      PingPong(pings, print, env.out)
     end
