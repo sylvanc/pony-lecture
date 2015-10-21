@@ -28,44 +28,6 @@ Actors make parallel programs easy.
 * <!-- .element: class="fragment"--> They express _composable concurrency_.
 * <!-- .element: class="fragment"--> In Pony, they are _safe_ and _consistent_.
 
-----
-
-What are the Pony guarantees?
-
-* <!-- .element: class="fragment"--> Data-race free.
-* <!-- .element: class="fragment"--> Causal messaging.
-* <!-- .element: class="fragment"--> No global state.
-* <!-- .element: class="fragment"--> Type-safe, memory-safe, exception-safe.
-* <!-- .element: class="fragment"--> Actors don't crash.
-* <!-- .element: class="fragment"--> Actors are garbage collected.
-* <!-- .element: class="fragment"--> Ahead-of-time compilation to native code.
-
-----
-
-When are Pony actors garbage collected?
-
-* <!-- .element: class="fragment"--> When their message queue is empty.
-* <!-- .element: class="fragment"--> And when the message queue will remain empty forever.
-* <!-- .element: class="fragment"--> Pony uses a novel protocol to achieve this without stop-the-world garbage collection.
-* <!-- .element: class="fragment"--> Currently, other actor languages require the programmer to manually manage actor lifetime.
-
-----
-
-Why don't Pony actors crash?
-
-* <!-- .element: class="fragment"--> Messages to Pony actors are type-safe. A Pony actor will never receive a message it doesn't understand.
-* <!-- .element: class="fragment"--> Pony code is exception-safe. There are no uncaught exceptions.
-* <!-- .element: class="fragment"--> Pony code is memory-safe. There are no null pointers or out-of-bounds reads/writes.
-
-----
-
-Can Pony _programs_ crash?
-
-<!-- .element: class="fragment"--> Sadly, yes. How?
-
-* <!-- .element: class="fragment"--> By exhausting all available memory.
-* <!-- .element: class="fragment"--> By calling code written in another language that has weaker guarantees.
-
 ---
 
 ## Massively Parallel Ping Pong
@@ -604,48 +566,78 @@ digraph {
 
 Some fun things we've covered:
 
-* <!-- .element: class="fragment"--> Traits, actors, classes.
-* <!-- .element: class="fragment"--> Sounds constructors, non-null type system.
-* <!-- .element: class="fragment"--> Inline initialisation, constructor sugar.
-* <!-- .element: class="fragment"--> Sendable types.
-* <!-- .element: class="fragment"--> Destructive read, ephemeral types.
-* <!-- .element: class="fragment"--> Non-reflexive aliasing.
-* <!-- .element: class="fragment"--> Receiver capabilities.
-* <!-- .element: class="fragment"--> Capability recovery.
-* <!-- .element: class="fragment"--> Asynchronicity and causality.
-* <!-- .element: class="fragment"--> Uniom types.
-* <!-- .element: class="fragment"--> Default arguments.
-* <!-- .element: class="fragment"--> Single and multiple assignment variables.
-* <!-- .element: class="fragment"--> Partial functions, exception handling.
-* <!-- .element: class="fragment"--> Viewpoint adaptation.
+* Traits, actors, classes.
+* Sounds constructors, non-null type system.
+* Inline initialisation, constructor sugar.
+* Sendable types.
+* Destructive read, ephemeral types.
+* Non-reflexive aliasing.
+* Receiver capabilities.
+* Capability recovery.
+* Asynchronicity and causality.
+* Uniom types.
+* Default arguments.
+* Single and multiple assignment variables.
+* Partial functions, exception handling.
+* Viewpoint adaptation.
 
 ----
 
 Some fun things we haven't covered:
 
-* <!-- .element: class="fragment"--> Apply and update sugar.
-* <!-- .element: class="fragment"--> Generic types.
-* <!-- .element: class="fragment"--> Generic methods.
-* <!-- .element: class="fragment"--> Viewpoint adapted types.
-* <!-- .element: class="fragment"--> Structural subtyping.
-* <!-- .element: class="fragment"--> Pattern matching.
-* <!-- .element: class="fragment"--> The foreign function interface.
-* <!-- .element: class="fragment"--> Intersection types.
-* <!-- .element: class="fragment"--> Tuples.
-* <!-- .element: class="fragment"--> Lambdas.
-* <!-- .element: class="fragment"--> Partial application.
-
-----
-
-How to get involved:
-
-<!-- .element: class="fragment"--> http://ponylang.org
-
-<!-- .element: class="fragment"--> sylvan@causality.io
+* Apply and update sugar.
+* Generic types.
+* Generic methods.
+* Viewpoint adapted types.
+* Structural subtyping.
+* Pattern matching.
+* The foreign function interface.
+* Intersection types.
+* Tuples.
+* Lambdas.
+* Partial application.
 
 ---
 
 ## Actor-Model Variations
+
+----
+
+What are the Pony guarantees?
+
+* <!-- .element: class="fragment"--> Data-race free.
+* <!-- .element: class="fragment"--> Causal messaging.
+* <!-- .element: class="fragment"--> No global state.
+* <!-- .element: class="fragment"--> Type-safe, memory-safe, exception-safe.
+* <!-- .element: class="fragment"--> Actors don't crash.
+* <!-- .element: class="fragment"--> Actors are garbage collected.
+* <!-- .element: class="fragment"--> Ahead-of-time compilation to native code.
+
+----
+
+When are Pony actors garbage collected?
+
+* <!-- .element: class="fragment"--> When their message queue is empty.
+* <!-- .element: class="fragment"--> And when the message queue will remain empty forever.
+* <!-- .element: class="fragment"--> Pony uses a novel protocol to achieve this without stop-the-world garbage collection.
+* <!-- .element: class="fragment"--> Currently, other actor languages require the programmer to manually manage actor lifetime.
+
+----
+
+Why don't Pony actors crash?
+
+* <!-- .element: class="fragment"--> Messages to Pony actors are type-safe. A Pony actor will never receive a message it doesn't understand.
+* <!-- .element: class="fragment"--> Pony code is exception-safe. There are no uncaught exceptions.
+* <!-- .element: class="fragment"--> Pony code is memory-safe. There are no null pointers or out-of-bounds reads/writes.
+
+----
+
+Can Pony _programs_ crash?
+
+<!-- .element: class="fragment"--> Sadly, yes. How?
+
+* <!-- .element: class="fragment"--> By exhausting all available memory.
+* <!-- .element: class="fragment"--> By calling code written in another language that has weaker guarantees.
 
 ----
 
@@ -814,3 +806,15 @@ Data-race free?    | Yes    | Copies       | No   | Copies
 Message enqueuing? | Causal | Pair-ordered | Pair-ordered  | Pair-ordered
 Message handling?  | Causal | Pair-ordered | Usually pair-ordered | Any
 Actors GC'd?       | Yes    | No           | No   | No
+
+---
+
+## Come get involved!
+
+We need students, hobbyists, tooling developers, library writers, compiler hackers, type system theorists... everyone!
+
+Why not you?
+
+http://ponylang.org
+
+sylvan@causality.io
