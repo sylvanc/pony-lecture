@@ -25,3 +25,28 @@ class CinemaTicket is Thing
 
   fun tag name(): String =>
     "cinema ticket"
+
+actor Person
+  let _name: String
+  let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  var _place: Place
+
+  new create(name: String, place: Place) =>
+    _name = name
+    _place = place
+    _place.arrive(this)
+
+  be take(thing: Thing iso) =>
+    _things.set(consume thing)
+
+  be give(whom: Person, thing: Thing tag) =>
+    try
+      let thing' = _extract(thing)
+      whom.take(consume thing')
+    end
+
+  fun ref _extract(thing: Thing tag): Thing iso^ ? =>
+    _things.extract(thing)
+
+  be arrived(who: Person, place: Place, from: (Place | None)) =>
+    None

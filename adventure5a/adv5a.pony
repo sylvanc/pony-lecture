@@ -3,7 +3,7 @@ Conveniences:
 
 * Union types.
 * Default arguments.
-* Multiple assignment variables.
+* Single vs. multiple assignment variables.
 """
 
 use "collections"

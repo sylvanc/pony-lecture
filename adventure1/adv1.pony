@@ -3,10 +3,7 @@ Concepts:
 
 * Traits.
 * Actors.
-* Constructors (named, sound).
-* Non-null type system.
-* Generic containers.
-* Single assignment variables.
+* Constructors (named, sound, non-null).
 """
 
 use "collections"

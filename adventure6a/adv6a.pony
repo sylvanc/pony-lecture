@@ -1,11 +1,8 @@
 """
 Concepts:
 
-* Functions on actors.
-* Private functions.
 * Partial functions.
 * Exception handling.
-* Ephemeral types.
 """
 
 use "collections"
@@ -36,7 +33,7 @@ actor Person
   fun ref _extract(thing: Thing tag): Thing iso^ ? =>
   // fun ref _extract(thing: Thing tag): Thing iso^ =>
     """
-    Extract the `thing` from our set, returning an _ephemeral_ type.
+    Extract the `thing` from our set, returning an ephemeral type.
     What if it isn't there? What value can we return?
     """
     _things.extract(thing)
