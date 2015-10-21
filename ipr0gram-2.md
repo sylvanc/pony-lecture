@@ -552,7 +552,64 @@ digraph {
 
 ----
 
-TODO: more examples coming
+Concepts:
+
+* Using `val` for sharing.
+
+----
+
+[Example #7](adventure7/adv7.pony)
+
+```pony
+trait Thing
+
+trait EThing
+
+actor Person
+  let _name: String
+  let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  let _ethings: SetIs[EThing val] = SetIs[EThing val]
+  var _place: Place
+
+  new create(name: String, place: Place) =>
+    _name = name
+    _place = place
+    _place.arrive(this)
+
+  be download(ething: EThing val) =>
+    """
+    EThings can be shared. No need to consume.
+    """
+    _ethings.set(ething)
+
+  be take(thing: Thing iso) =>
+    _things.set(consume thing)
+```
+<!-- .element: class="stretch"-->
+
+----
+
+What if Alice and Bob want to read the same ebook?
+
+```viz
+digraph {
+  rankdir=LR;
+  node [fontsize="24"];
+  edge [fontsize="18"];
+  ebook [shape=box]
+  text [shape=box]
+  alice -> ebook [label=val]
+  bob -> ebook [label=val]
+  ebook -> text [label=ref]
+}
+```
+
+* <!-- .element: class="fragment"--> `ebook` sees `text` as `ref`.
+* <!-- .element: class="fragment"--> `alice` sees `ebook` as `val`.
+* <!-- .element: class="fragment"--> `val -> ref = val`, so `alice` sees `text` as `val`.
+* <!-- .element: class="fragment"--> `bob` sees `ebook` as `val`.
+* <!-- .element: class="fragment"--> `val -> ref = val`, so `bob` sees `text` as `val`.
+* <!-- .element: class="fragment"--> Alice and Bob can read the same ebook!
 
 ---
 
