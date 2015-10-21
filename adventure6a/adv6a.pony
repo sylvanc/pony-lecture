@@ -1,6 +1,7 @@
 """
 Concepts:
 
+* Ephemeral results.
 * Partial functions.
 * Exception handling.
 """

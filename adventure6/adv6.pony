@@ -2,6 +2,7 @@
 Concepts:
 
 * Aliasing `iso` as `tag`.
+* Using identity to refer to mutable objects another actor holds.
 """
 
 use "collections"
@@ -17,8 +18,10 @@ actor Main
     let alice = Person("Alice", pub)
     let bob = Person("Bob", pub)
 
-    let ticket = recover CinemaTicket("Minions") end
-    let ticket_id = ticket
+    let ticket: CinemaTicket iso = recover CinemaTicket("Minions") end
+    let ticket_id: CinemaTicket tag = ticket
+    // let ticket = recover CinemaTicket("Minions") end
+    // let ticket_id = ticket
 
     alice.take(consume ticket)
     // alice.take(ticket)

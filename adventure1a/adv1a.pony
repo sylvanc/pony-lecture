@@ -18,8 +18,8 @@ actor Person
   Specifying a type without a constructor as an expression implicitly uses the
   default constructor, which is create().
   """
-  let _name: String
   let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  let _name: String
 
   new create(name': String) =>
     _name = name'

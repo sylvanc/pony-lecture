@@ -167,7 +167,7 @@ actor Person
 
   new two_names(first: String, last: String) =>
     _name = first + " " + last
-    _things = SetIs[Thing iso]
+    _things = SetIs[Thing iso].create()
 
   fun name(): String =>
     _name
@@ -194,8 +194,8 @@ actor Person
   Specifying a type without a constructor as an expression implicitly uses the
   default constructor, which is create().
   """
-  let _name: String
   let _things: SetIs[Thing iso] = SetIs[Thing iso]
+  let _name: String
 
   new create(name': String) =>
     _name = name'
@@ -257,13 +257,15 @@ What's the type of `consume thing`?
 
 ----
 
-An _ephemeral_ type indicates that the previous reference to the object no longer exists.
+An _ephemeral_ type indicates that the previous path to the object no longer exists.
 
-<!-- .element: class="fragment"--> For a `Thing iso`, we know there is only one `iso` reference (one path) to the object, because it's isolated.
+<!-- .element: class="fragment"--> A path is a sequence of field reads, starting from any actor, any local variable in any stack frame, or any message in any queue.
 
-<!-- .element: class="fragment"--> So for a `Thing iso^` we know there are _zero_ `iso` references (no path) to the object!
+<!-- .element: class="fragment"--> For a `Thing iso`, we know there is only one `iso` path to the object, because it's isolated.
 
-<!-- .element: class="fragment"--> In fact, we know there are zero _readable_ references to the object.
+<!-- .element: class="fragment"--> So for a `Thing iso^` we know there are _no_ `iso` paths to the object!
+
+<!-- .element: class="fragment"--> In fact, we know there are no _readable_ paths to the object.
 
 ----
 
@@ -390,12 +392,6 @@ actor Person
     _place.arrive(this, place)
     // _place.arrive(this, None)
     // _place.arrive(this)
-
-  be arrived(who: Person, place: Place, from: (Place | None)) =>
-    """
-    This is a placeholder: here, we would react to someone arriving.
-    """
-    None
 ```
 <!-- .element: class="stretch"-->
 
@@ -404,6 +400,7 @@ actor Person
 Concepts:
 
 * Aliasing `iso` as `tag`.
+* Using identity to refer to mutable objects another actor holds.
 
 ----
 
@@ -421,8 +418,10 @@ actor Main
     let alice = Person("Alice", pub)
     let bob = Person("Bob", pub)
 
-    let ticket = recover CinemaTicket("Minions") end
-    let ticket_id = ticket
+    let ticket: CinemaTicket iso = recover CinemaTicket("Minions") end
+    let ticket_id: CinemaTicket tag = ticket
+    // let ticket = recover CinemaTicket("Minions") end
+    // let ticket_id = ticket
 
     alice.take(consume ticket)
     // alice.take(ticket)
@@ -435,6 +434,7 @@ actor Main
 
 Concepts:
 
+* Ephemeral results.
 * Partial functions.
 * Exception handling.
 
@@ -447,14 +447,6 @@ actor Person
   let _name: String
   let _things: SetIs[Thing iso] = SetIs[Thing iso]
   var _place: Place
-
-  new create(name: String, place: Place) =>
-    _name = name
-    _place = place
-    _place.arrive(this)
-
-  be take(thing: Thing iso) =>
-    _things.set(consume thing)
 
   be give(whom: Person, thing: Thing tag) =>
     """
@@ -496,6 +488,8 @@ digraph {
 <!-- .element: class="fragment"-->
 
 <!-- .element: class="fragment"--> This is an example of _viewpoint adaptation_.
+
+<!-- .element: class="fragment"--> Alice has an `iso` bicycle because it's hers, the bicycle has `ref` brakes (where `ref` is a reference type: a plain-old mutable object) because the rider needs to be able to engage and disengage the brakes, and whether or not the brakes are engaged is a boolean.
 
 ----
 
@@ -571,11 +565,6 @@ actor Person
   let _ethings: SetIs[EThing val] = SetIs[EThing val]
   var _place: Place
 
-  new create(name: String, place: Place) =>
-    _name = name
-    _place = place
-    _place.arrive(this)
-
   be download(ething: EThing val) =>
     """
     EThings can be shared. No need to consume.
@@ -613,8 +602,28 @@ digraph {
 
 ----
 
-Some fun things I haven't covered:
+Some fun things we've covered:
 
+* <!-- .element: class="fragment"--> Traits, actors, classes.
+* <!-- .element: class="fragment"--> Sounds constructors, non-null type system.
+* <!-- .element: class="fragment"--> Inline initialisation, constructor sugar.
+* <!-- .element: class="fragment"--> Sendable types.
+* <!-- .element: class="fragment"--> Destructive read, ephemeral types.
+* <!-- .element: class="fragment"--> Non-reflexive aliasing.
+* <!-- .element: class="fragment"--> Receiver capabilities.
+* <!-- .element: class="fragment"--> Capability recovery.
+* <!-- .element: class="fragment"--> Asynchronicity and causality.
+* <!-- .element: class="fragment"--> Uniom types.
+* <!-- .element: class="fragment"--> Default arguments.
+* <!-- .element: class="fragment"--> Single and multiple assignment variables.
+* <!-- .element: class="fragment"--> Partial functions, exception handling.
+* <!-- .element: class="fragment"--> Viewpoint adaptation.
+
+----
+
+Some fun things we haven't covered:
+
+* <!-- .element: class="fragment"--> Apply and update sugar.
 * <!-- .element: class="fragment"--> Generic types.
 * <!-- .element: class="fragment"--> Generic methods.
 * <!-- .element: class="fragment"--> Viewpoint adapted types.
@@ -625,6 +634,14 @@ Some fun things I haven't covered:
 * <!-- .element: class="fragment"--> Tuples.
 * <!-- .element: class="fragment"--> Lambdas.
 * <!-- .element: class="fragment"--> Partial application.
+
+----
+
+How to get involved:
+
+<!-- .element: class="fragment"--> http://ponylang.org
+
+<!-- .element: class="fragment"--> sylvan@causality.io
 
 ---
 
