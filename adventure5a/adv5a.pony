@@ -20,14 +20,12 @@ actor Person
     // _place.arrive(this, None)
     // _place.arrive(this)
 
-  be arrived(who: Person, place: Place, from: (Place | None)) =>
+  be arrived(who: Person, place: Place, from: Place) =>
+  // be arrived(who: Person, place: Place, from: (Place | None)) =>
     """
     This is a placeholder: here, we would react to someone arriving.
-    In this case, we only react to our own arrival.
     """
-    if this is who then
-      _place = place
-    end
+    None
 
 actor Place
   let _name: String
@@ -36,8 +34,8 @@ actor Place
   new create(name': String) =>
     _name = name'
 
-  be arrive(who: Person, from: (Place | None)) =>
-  // be arrive(who: Person, from: Place) =>
+  be arrive(who: Person, from: Place) =>
+  // be arrive(who: Person, from: (Place | None)) =>
   // be arrive(who: Person, from: (Place | None) = None) =>
     """
     When someone arrives, tell everyone present where they came from.

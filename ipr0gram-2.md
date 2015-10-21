@@ -303,6 +303,7 @@ class CinemaTicket is Thing
     Since a CinemaTicket is a Thing, it must provide a name() function.
     """
     "cinema ticket"
+    // film
 ```
 <!-- .element: class="stretch"-->
 
@@ -393,11 +394,8 @@ actor Person
   be arrived(who: Person, place: Place, from: (Place | None)) =>
     """
     This is a placeholder: here, we would react to someone arriving.
-    In this case, we only react to our own arrival.
     """
-    if this is who then
-      _place = place
-    end
+    None
 ```
 <!-- .element: class="stretch"-->
 

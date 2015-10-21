@@ -24,3 +24,4 @@ class CinemaTicket is Thing
     Since a CinemaTicket is a Thing, it must provide a name() function.
     """
     "cinema ticket"
+    // film
