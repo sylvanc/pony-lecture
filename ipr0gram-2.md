@@ -34,10 +34,37 @@ What are the Pony guarantees?
 
 * <!-- .element: class="fragment"--> Data-race free.
 * <!-- .element: class="fragment"--> Causal messaging.
+* <!-- .element: class="fragment"--> No global state.
 * <!-- .element: class="fragment"--> Type-safe, memory-safe, exception-safe.
 * <!-- .element: class="fragment"--> Actors don't crash.
 * <!-- .element: class="fragment"--> Actors are garbage collected.
 * <!-- .element: class="fragment"--> Ahead-of-time compilation to native code.
+
+----
+
+When are Pony actors garbage collected?
+
+* <!-- .element: class="fragment"--> When their message queue is empty.
+* <!-- .element: class="fragment"--> And when the message queue will remain empty forever.
+* <!-- .element: class="fragment"--> Pony uses a novel protocol to achieve this without stop-the-world garbage collection.
+* <!-- .element: class="fragment"--> Currently, other actor languages require the programmer to manually manage actor lifetime.
+
+----
+
+Why don't Pony actors crash?
+
+* <!-- .element: class="fragment"--> Messages to Pony actors are type-safe. A Pony actor will never receive a message it doesn't understand.
+* <!-- .element: class="fragment"--> Pony code is exception-safe. There are no uncaught exceptions.
+* <!-- .element: class="fragment"--> Pony code is memory-safe. There are no null pointers or out-of-bounds reads/writes.
+
+----
+
+Can Pony programs crash?
+
+<!-- .element: class="fragment"--> Sadly, yes. How?
+
+* <!-- .element: class="fragment"--> By exhausting all available memory.
+* <!-- .element: class="fragment"--> By calling code written in another language that has weaker guarantees.
 
 ---
 
@@ -136,178 +163,6 @@ Massively parallel programs in Pony are:
 * <!-- .element: class="fragment"--> Easy to write.
 * <!-- .element: class="fragment"--> Easy to scale.
 * <!-- .element: class="fragment"--> Easy to reason about.
-
----
-
-## Actor-Model Variations
-
-----
-
-Didn't you say JavaScript was an actor-model language?
-
-* <!-- .element: class="fragment"--> Yes! A JavaScript program is an actor.
-* <!-- .element: class="fragment"--> Seriously! A JavaScript program reacts to events (behaviours) in sequence.
-* <!-- .element: class="fragment"--> Typically, there is only one actor.
-* <!-- .element: class="fragment"--> But with web workers, you can have more.
-
-----
-
-JavaScript
-
-```js
-var pings = 0
-var pongs = 0
-
-onmessage = function(e) {
-  if(e.type == "ping") { // Our ping behaviour.
-    pings += 1 // Changing state.
-    e.sender.postMessage({type: "pong", sender: this})
-  } else if(e.type == "pong") { // Our pong behaviour.
-    pongs += 1 // Changing state.
-  }
-}
-```
-
-----
-
-What are the JavaScript guarantees?
-
-* <!-- .element: class="fragment"--> Messages are ordered between pairs of actors, but not generally.
-* <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
-* <!-- .element: class="fragment"--> Objects in messages are copied, so there are no data races.
-* <!-- .element: class="fragment"--> The identity of objects in messages is lost.
-* <!-- .element: class="fragment"--> Actors are not garbage collected, and can terminate, so actor references can be invalid.
-
-----
-
-What about Node.js?
-
-* <!-- .element: class="fragment"--> Node.js has a web workers API.
-* <!-- .element: class="fragment"--> It's an actor-model language too!
-
-----
-
-Actors on the JVM: Akka
-
-* <!-- .element: class="fragment"--> Akka is a powerful, mature actor-model toolkit for Scala and Java.
-* <!-- .element: class="fragment"--> Like Pony and JavaScript, actors are presented as asynchronous objects.
-
-----
-
-Akka
-
-```scala
-class PingPong() extends Actor {
-  var pings = 0 // State.
-  var pongs = 0
-
-  def receive = {
-    case PingMessage(that) => // This is our ping behaviour.
-      pings += 1 // Changing state.
-      that ! PongMessage(this) // Sending a message.
-    case PongMessage(that) => // This is our pong behaviour.
-      pongs += 1 // Changing state.
-    case StopMessage => // Akka actors must be manually terminated.
-      context.stop(self)
-  }
-}
-```
-
-----
-
-What are the Akka guarantees?
-
-* <!-- .element: class="fragment"--> Messages are usually ordered between pairs of actors, but not generally.
-* <!-- .element: class="fragment"--> Some actors have mailboxes that support out-of-order messaging.
-* <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
-* <!-- .element: class="fragment"--> Objects in messages are __not__ data-race free.
-* <!-- .element: class="fragment"--> Actors are not garbage collected, and can crash, so actor references can be invalid.
-
-----
-
-Actors as functions: Erlang
-
-* <!-- .element: class="fragment"--> Erlang has been extensively used in production systems for more than 20 years.
-* <!-- .element: class="fragment"--> Actors are presented as asynchronous _functions_ rather than asynchronous _objects_.
-
-----
-
-Erlang
-
-```erl
-pingpong(Pings, Pongs) ->
-  receive % We are looking for a message.
-    {ping, That} ->
-      % This is our ping behaviour.
-      That ! pong, % Sending a message.
-      pingpong(Pings + 1, Pongs); % Changing state.
-    pong ->
-      % This is our pong behaviour.
-      pingpong(Pings, Pongs + 1); % Changing state.
-    exit ->
-      % Erlang actors must be manually terminated.
-      ok
-  end.
-```
-
-----
-
-What are the Erlang guarantees?
-
-* <!-- .element: class="fragment"--> Messages will be _enqueued_ in order between pairs of actors.
-* <!-- .element: class="fragment"--> Messages can be _reacted to_ in any order.
-* <!-- .element: class="fragment"--> All data is immutable, so no race conditions.
-* <!-- .element: class="fragment"--> But all data in messages is copied anyway.
-* <!-- .element: class="fragment"--> Actors are not garbage collected, and can crash, so actor references can be invalid.
-
-----
-
-Erlang allows an actor to _pattern match_ on its queue.
-
-<!-- .element: class="fragment"--> This is why messages can be _reacted to_ in any order.
-
-----
-
-Out-of-order message processing
-
-```erl
-func() ->
-  receive
-    goodbye ->
-      io:format("received goodbye~n", []),
-      receive
-        hello ->
-          io:format("received hello~n", [])
-      end
-  end.
-
-go() ->
-  That = spawn(?MODULE, func, []),
-  That ! hello,
-  That ! goodbye,
-  ok.
-```
-
-<!-- .element: class="fragment"--> We send hello and then goodbye.
-
-<!-- .element: class="fragment"--> The actor reacts to goodbye first, then hello.
-
-----
-
-Akka and JavaScript pattern match on a single message to determine how to react.
-
-<!-- .element: class="fragment"--> Erlang pattern matches on the _queue_, allowing it to select _which_ message to react to.
-
-----
-
-Summary of Guarantees
-
-Feature            | Pony   | JavaScript   | Akka | Erlang
--------------------|--------|--------------|------|-------
-Data-race free?    | Yes    | Copies       | No   | Copies
-Message enqueuing? | Causal | Pair-ordered | Pair-ordered  | Pair-ordered
-Message handling?  | Causal | Pair-ordered | Usually pair-ordered | Any
-Actors GC'd?       | Yes    | No           | No   | No
 
 ---
 
@@ -414,6 +269,31 @@ actor Person
     _things.set(consume thing)
     // _things.set(thing)
 ```
+
+----
+
+What's the type of `consume thing`?
+
+<!-- .element: class="fragment"--> `Thing iso^`
+
+<!-- .element: class="fragment"--> The `^` means it's an _ephemeral_ type.
+
+----
+
+An _ephemeral_ type indicates that the previous reference to the object no longer exists.
+
+<!-- .element: class="fragment"--> For a `Thing iso`, we know there is only one `iso` reference (one path) to the object, because it's isolated.
+
+<!-- .element: class="fragment"--> So for a `Thing iso^` we know there are _zero_ `iso` references (no path) to the object!
+
+<!-- .element: class="fragment"--> In fact, we know there are zero _readable_ references to the object.
+
+----
+
+What can we do with an `iso^` that's different from an `iso`?
+
+* <!-- .element: class="fragment"--> We can assign it to an `iso` variable, going from zero `iso` references to one `iso` reference.
+* <!-- .element: class="fragment"--> We can send it to another actor, because we know we have not retained an `iso` reference.
 
 ----
 
@@ -653,6 +533,172 @@ TODO: more examples coming
 
 ---
 
-TODO: summary
+## Actor-Model Variations
 
-How this stuff affects performance?
+----
+
+Didn't you say JavaScript was an actor-model language?
+
+* <!-- .element: class="fragment"--> Yes! A JavaScript program is an actor.
+* <!-- .element: class="fragment"--> Seriously! A JavaScript program reacts to events (behaviours) in sequence.
+* <!-- .element: class="fragment"--> Typically, there is only one actor.
+* <!-- .element: class="fragment"--> But with web workers, you can have more.
+
+----
+
+JavaScript
+
+```js
+var pings = 0
+var pongs = 0
+
+onmessage = function(e) {
+  if(e.type == "ping") { // Our ping behaviour.
+    pings += 1 // Changing state.
+    e.sender.postMessage({type: "pong", sender: this})
+  } else if(e.type == "pong") { // Our pong behaviour.
+    pongs += 1 // Changing state.
+  }
+}
+```
+
+----
+
+What are the JavaScript guarantees?
+
+* <!-- .element: class="fragment"--> Messages are ordered between pairs of actors, but not generally.
+* <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
+* <!-- .element: class="fragment"--> Objects in messages are copied, so there are no data races.
+* <!-- .element: class="fragment"--> The identity of objects in messages is lost.
+* <!-- .element: class="fragment"--> Actors are not garbage collected, and can terminate, so actor references can be invalid.
+
+----
+
+What about Node.js?
+
+* <!-- .element: class="fragment"--> Node.js has a web workers API.
+* <!-- .element: class="fragment"--> It's an actor-model language too!
+
+----
+
+Actors on the JVM: Akka
+
+* <!-- .element: class="fragment"--> Akka is a powerful, mature actor-model toolkit for Scala and Java.
+* <!-- .element: class="fragment"--> Like Pony and JavaScript, actors are presented as asynchronous objects.
+
+----
+
+Akka
+
+```scala
+class PingPong() extends Actor {
+  var pings = 0 // State.
+  var pongs = 0
+
+  def receive = {
+    case PingMessage(that) => // This is our ping behaviour.
+      pings += 1 // Changing state.
+      that ! PongMessage(this) // Sending a message.
+    case PongMessage(that) => // This is our pong behaviour.
+      pongs += 1 // Changing state.
+    case StopMessage => // Akka actors must be manually terminated.
+      context.stop(self)
+  }
+}
+```
+
+----
+
+What are the Akka guarantees?
+
+* <!-- .element: class="fragment"--> Messages are usually ordered between pairs of actors, but not generally.
+* <!-- .element: class="fragment"--> Some actors have mailboxes that support out-of-order messaging.
+* <!-- .element: class="fragment"--> Messages aren't type-safe: an actor can be sent a message it doesn't understand.
+* <!-- .element: class="fragment"--> Objects in messages are __not__ data-race free.
+* <!-- .element: class="fragment"--> Actors are not garbage collected, and can crash, so actor references can be invalid.
+
+----
+
+Actors as functions: Erlang
+
+* <!-- .element: class="fragment"--> Erlang has been extensively used in production systems for more than 20 years.
+* <!-- .element: class="fragment"--> Actors are presented as asynchronous _functions_ rather than asynchronous _objects_.
+
+----
+
+Erlang
+
+```erl
+pingpong(Pings, Pongs) ->
+  receive % We are looking for a message.
+    {ping, That} ->
+      % This is our ping behaviour.
+      That ! pong, % Sending a message.
+      pingpong(Pings + 1, Pongs); % Changing state.
+    pong ->
+      % This is our pong behaviour.
+      pingpong(Pings, Pongs + 1); % Changing state.
+    exit ->
+      % Erlang actors must be manually terminated.
+      ok
+  end.
+```
+
+----
+
+What are the Erlang guarantees?
+
+* <!-- .element: class="fragment"--> Messages will be _enqueued_ in order between pairs of actors.
+* <!-- .element: class="fragment"--> Messages can be _reacted to_ in any order.
+* <!-- .element: class="fragment"--> All data is immutable, so no race conditions.
+* <!-- .element: class="fragment"--> But all data in messages is copied anyway.
+* <!-- .element: class="fragment"--> Actors are not garbage collected, and can crash, so actor references can be invalid.
+
+----
+
+Erlang allows an actor to _pattern match_ on its queue.
+
+<!-- .element: class="fragment"--> This is why messages can be _reacted to_ in any order.
+
+----
+
+Out-of-order message processing
+
+```erl
+func() ->
+  receive
+    goodbye ->
+      io:format("received goodbye~n", []),
+      receive
+        hello ->
+          io:format("received hello~n", [])
+      end
+  end.
+
+go() ->
+  That = spawn(?MODULE, func, []),
+  That ! hello,
+  That ! goodbye,
+  ok.
+```
+
+<!-- .element: class="fragment"--> We send hello and then goodbye.
+
+<!-- .element: class="fragment"--> The actor reacts to goodbye first, then hello.
+
+----
+
+Akka and JavaScript pattern match on a single message to determine how to react.
+
+<!-- .element: class="fragment"--> Erlang pattern matches on the _queue_, allowing it to select _which_ message to react to.
+
+----
+
+Summary of Guarantees
+
+Feature            | Pony   | JavaScript   | Akka | Erlang
+-------------------|--------|--------------|------|-------
+Data-race free?    | Yes    | Copies       | No   | Copies
+Message enqueuing? | Causal | Pair-ordered | Pair-ordered  | Pair-ordered
+Message handling?  | Causal | Pair-ordered | Usually pair-ordered | Any
+Actors GC'd?       | Yes    | No           | No   | No
