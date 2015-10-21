@@ -811,10 +811,14 @@ Actors GC'd?       | Yes    | No           | No   | No
 
 ## Come get involved!
 
-We need students, hobbyists, tooling developers, library writers, compiler hackers, type system theorists... everyone!
+Join our community of students, hobbyists, industry developers, tooling developers, library writers, compiler hackers, and type system theorists.
 
 Why not you?
 
 http://ponylang.org
+
+People at Imperial you can contact directly:
+
+s.drossopoulou@imperial.ac.uk
 
 sylvan@causality.io
