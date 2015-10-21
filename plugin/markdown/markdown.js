@@ -25,6 +25,8 @@
 			return '<div>' + code + '</div>';
 		} else if( lang == 'seq' ) {
 			return '<div><div class="seq">' + code + '</div></div>';
+		} else if( lang == 'viz' ) {
+			return '<div><div class="viz">' + code + '</div></div>';
 		} else if( typeof lang !== 'undefined' ) {
 			return '<pre><code class=lang-' + lang + '>' + code + '</code></pre>';
 		} else {

@@ -480,6 +480,80 @@ actor Person
 
 ----
 
+What happens if Alices has a `Bicycle iso` and she wants to know if the brakes are set?
+
+```viz
+digraph {
+  rankdir=LR;
+  node [fontsize="24"];
+  edge [fontsize="18"];
+  bicycle [shape=box]
+  brakes [shape=box]
+  set [shape=box]
+  alice -> bicycle [label=iso]
+  bicycle -> brakes [label=ref]
+  brakes -> set: Bool [label=val]
+}
+```
+<!-- .element: class="fragment"-->
+
+<!-- .element: class="fragment"--> This is an example of _viewpoint adaptation_.
+
+----
+
+Viewpoint adaptation goes from right to left.
+
+```viz
+digraph {
+  rankdir=LR;
+  node [fontsize="24"];
+  edge [fontsize="18"];
+  bicycle [shape=box]
+  brakes [shape=box]
+  set [shape=box]
+  alice -> bicycle [label=iso]
+  bicycle -> brakes [label=ref]
+  brakes -> set: Bool [label=val]
+}
+```
+
+* <!-- .element: class="fragment"--> `brakes` sees `set` as `val`.
+* <!-- .element: class="fragment"--> `bicycle` sees `brakes` as `ref`.
+* <!-- .element: class="fragment"--> `ref -> val = val`, so `bicycle` sees `set` as `val`.
+* <!-- .element: class="fragment"--> `alice` sees `bicycle` as `iso`.
+* <!-- .element: class="fragment"--> `iso -> val = val`, so `alice` sees `set` as `val`.
+* <!-- .element: class="fragment"--> In other words: `iso -> (ref -> val) = val`.
+* <!-- .element: class="fragment"--> Great! Alice can see whether or not the brakes are set.
+
+----
+
+What if Bob wants to see if know if Alice's brakes are set?
+
+```viz
+digraph {
+  rankdir=LR;
+  node [fontsize="24"];
+  edge [fontsize="18"];
+  bicycle [shape=box]
+  brakes [shape=box]
+  set [shape=box]
+  alice -> bicycle [label=iso]
+  bob -> bicycle [label=tag]
+  bicycle -> brakes [label=ref]
+  brakes -> set: Bool [label=val]
+}
+```
+
+* <!-- .element: class="fragment"--> `brakes` sees `set` as `val`.
+* <!-- .element: class="fragment"--> `bicycle` sees `brakes` as `ref`.
+* <!-- .element: class="fragment"--> `ref -> val = val`, so `bicycle` sees `set` as `val`.
+* <!-- .element: class="fragment"--> `bob` sees `bicycle` as `tag`.
+* <!-- .element: class="fragment"--> `tag -> val = ⊥`, so `bob` can't see `set`.
+* <!-- .element: class="fragment"--> In other words: `tag -> (ref -> val) = ⊥`.
+* <!-- .element: class="fragment"--> Bob will have to ask Alice if her brakes are set.
+
+----
+
 TODO: more examples coming
 
 ---
