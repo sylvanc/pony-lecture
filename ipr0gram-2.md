@@ -566,6 +566,7 @@ digraph {
 
 Advanced concepts:
 
+* Type aliases.
 * Generic types.
 * Generic functions.
 * Operator overloading.
@@ -578,6 +579,8 @@ Advanced concepts:
 [Advanced Example](https://raw.githubusercontent.com/CausalityLtd/ponyc/master/packages/collections/set.pony)
 
 ```pony
+type Set[A: (Hashable #read & Equatable[A] #read)] is HashSet[A, HashEq[A]]
+
 class HashSet[A, H: HashFunction[A!] val] is Comparable[HashSet[A, H] box]
   """
   A set, built on top of a HashMap. This is implemented as map of an alias of
@@ -626,6 +629,7 @@ Some fun things we've covered:
 
 Some advanced things we've covered:
 
+* Type aliases.
 * Generic types.
 * Generic functions.
 * Operator overloading.
