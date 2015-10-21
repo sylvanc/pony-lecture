@@ -611,6 +611,21 @@ digraph {
 * <!-- .element: class="fragment"--> `val -> ref = val`, so `bob` sees `text` as `val`.
 * <!-- .element: class="fragment"--> Alice and Bob can read the same ebook!
 
+----
+
+Some fun things I haven't covered:
+
+* <!-- .element: class="fragment"--> Generic types.
+* <!-- .element: class="fragment"--> Generic methods.
+* <!-- .element: class="fragment"--> Viewpoint adapted types.
+* <!-- .element: class="fragment"--> Structural subtyping.
+* <!-- .element: class="fragment"--> Pattern matching.
+* <!-- .element: class="fragment"--> The foreign function interface.
+* <!-- .element: class="fragment"--> Intersection types.
+* <!-- .element: class="fragment"--> Tuples.
+* <!-- .element: class="fragment"--> Lambdas.
+* <!-- .element: class="fragment"--> Partial application.
+
 ---
 
 ## Actor-Model Variations
