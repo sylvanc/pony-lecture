@@ -583,8 +583,7 @@ type Set[A: (Hashable #read & Equatable[A] #read)] is HashSet[A, HashEq[A]]
 
 class HashSet[A, H: HashFunction[A!] val] is Comparable[HashSet[A, H] box]
   """
-  A set, built on top of a HashMap. This is implemented as map of an alias of
-  a type to itself
+  This is implemented as a map of an alias of a type to itself.
   """
   let _map: HashMap[A!, A, H]
 
