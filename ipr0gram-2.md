@@ -564,6 +564,36 @@ digraph {
 
 ----
 
+An ephemeral (or _unaliased_) type is annotated with `^`.
+
+<!-- .element: class="fragment"--> The dual of an ephemeral type is a borrowed (or _aliased_) type, which is annotated with `!`.
+
+<!-- .element: class="fragment"--> In non-generic code, `!` isn't needed, since we already know that `iso! == tag`.
+
+----
+
+In generic code, we often don't know the reference capability of a type.
+
+<!-- .element: class="fragment"--> In `Array[A]`, our type parameter `A` could have _any_ reference capability.
+
+<!-- .element: class="fragment"--> `!` allows the programmer to specify an alias of an unknown reference capability, for example: `A!`
+
+----
+
+What about viewpoint adaptation through an unknown reference capability?
+
+* <!-- .element: class="fragment"--> `val->ref = val`, but what's `A->B`?
+* <!-- .element: class="fragment"--> It's: `A->B`
+* <!-- .element: class="fragment"--> Arrow types allow the programmer to express viewpoint adaptation in the presence of unknown reference capabilities.
+
+----
+
+What if the unknown reference capability is the receiver?
+
+<!-- .element: class="fragment"--> `this->A`
+
+----
+
 Advanced concepts:
 
 * Type aliases.
