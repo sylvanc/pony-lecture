@@ -298,12 +298,12 @@ A Pony program begins with a `Main` actor.
 ```pony
 actor Main
   new create(env: Env) => // A Main actor is always passed an environment.
-    PingPong.partner(PingPong) // The default constructor is create().
+    PingPong // The default constructor is create().
 ```
 
 * <!-- .element: class="fragment"--> The environment contains things that might be global state in other languages: command line arguments, environment variables, `stdin`, `stdout`, etc.
 * <!-- .element: class="fragment"--> Saying `PingPong` is syntactic sugar for `PingPong.create()`.
-* <!-- .element: class="fragment"--> In this case we don't need anything from the environment. We create two `PingPong` actors and pass the first one to the second one.
+* <!-- .element: class="fragment"--> In this case we don't need anything from the environment.
 
 ----
 
