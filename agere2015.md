@@ -28,11 +28,11 @@ Imperial College London, Causality Ltd
 
 ### What can be safely sent in a message by reference?
 
-* <!-- .element: class="fragment"--> Actor references that allow sending messages, but not reading from oor writing to the actor's state.
+* <!-- .element: class="fragment"--> Actor references that allow sending messages, but not reading from or writing to the actor's state.
 * <!-- .element: class="fragment"--> Opaque references that allow neither reading from nor writing to the object.
-* <!-- .element: class="fragment"--> Immutable objects.
-* <!-- .element: class="fragment"--> Mutable objects, as long as the sending actor is guaranteed not to retain a reference to the object that allows either reading from it or writing to it.
-    - <!-- .element: class="fragment"--> That is, _isolated_ objects.
+* <!-- .element: class="fragment"--> Globally immutable references.
+* <!-- .element: class="fragment"--> Mutable references, as long as the sending actor is guaranteed not to retain an alias to the object that allows either reading from it or writing to it.
+    - <!-- .element: class="fragment"--> That is, _read and write unique_ mutable references.
 
 ----
 
@@ -41,14 +41,14 @@ Imperial College London, Causality Ltd
 * <!-- .element: class="fragment"--> Writeability.
 * <!-- .element: class="fragment"--> Readability.
 * <!-- .element: class="fragment"--> Aliasing.
-    - <!-- .element: class="fragment"--> Track writeable aliases to determine immutability.
-    - <!-- .element: class="fragment"--> Track readable and writeable aliases to determine isolation.
+    - <!-- .element: class="fragment"--> Track writeable aliases to determine global immutability.
+    - <!-- .element: class="fragment"--> Track readable and writeable aliases to determine read/write-uniqueness.
 
 ----
 
 Expressing writeability and readability on a reference is easy.
 
-<!-- .element: class="fragment"--> Statically tracking all possible aliases it tricker.
+<!-- .element: class="fragment"--> Statically tracking all possible aliases is trickier.
 
 <!-- .element: class="fragment"--> For example, in C++ a `const` reference is _locally_ immutable, but has no guarantee of _global_ immutability.
 
@@ -65,6 +65,8 @@ Let's call a read/write-unique mutable reference to an object __iso__, to indica
 An __iso__ reference to an object must guarantee that there are no readable or writeable aliases to the object, anywhere in the program.
 
 <!-- .element: class="fragment"--> If such aliases existed, and we sent the object to another actor, we couldn't guarantee the __iso__ object and those aliases were held by the _same_ actor.
+
+<!-- .element: class="fragment"--> So we couldn't guarantee data-race freedom.
 
 ----
 
@@ -90,7 +92,7 @@ digraph {
 }
 ```
 
-<!-- .element: class="fragment"--> Bob can be trying to read the data while Alice is modifying it, which can cause data races.
+<!-- .element: class="fragment"--> Bob can read the Data while Alice is writing to it, which can cause data-races.
 
 ----
 
@@ -106,6 +108,8 @@ digraph {
 ```
 
 <!-- .element: class="fragment"--> Alice could _send_ the __iso__ Data to Bob, but retain a readable reference.
+
+<!-- .element: class="fragment"--> So in the future, Bob could write to the Data while Alice reads it.
 
 ----
 
@@ -289,7 +293,7 @@ _None_                 |              |           | __tag__
 
 ----
 
-Any reference that denies _global_ write aliases is _immutable_. You can use _that_ reference to read from the object, because no other actor can read from write to the object. You _can't_ use that reference to write to the object, because some other actor might read from it.
+Any reference that denies _global_ write aliases is _immutable_. You can use _that_ reference to read from the object, because no other actor can read from or write to the object. You _can't_ use that reference to write to the object, because some other actor might read from it.
 
 | Deny global | aliases | |
 -----------------------|--------------|-------------|-----
@@ -301,7 +305,7 @@ _None_                 |              |             | __tag__
 
 ----
 
-Any reference that denies nothing is _opaque_. You can't use _that_ reference to read from or write to the object, because some other actor might read from write to the object.
+Any reference that denies nothing is _opaque_. You can't use _that_ reference to read from or write to the object, because some other actor might read from or write to the object.
 
 | Deny global | aliases | |
 -----------------------|--------------|-------------|-----
@@ -319,7 +323,7 @@ _None_                 |              |             | __tag__
 
 If we deny global read/write aliases, but allow _any_ local alias, we have a reference that is _mutable_ but not _sendable_.
 
-<!-- .element: class="fragment"--> It behaves like an object in most object oriented languages: you can have lots of aliases to it, and you can mutate it
+<!-- .element: class="fragment"--> It behaves like an object in most object oriented languages: you can have lots of aliases to it, and you can mutate it.
 
 <!-- .element: class="fragment"--> But you have a guarantee: you know no other actor will read from or write to the object.
 
@@ -341,7 +345,7 @@ If we deny global write aliases, but allow _any_ local alias, we have a referenc
 
 <!-- .element: class="fragment"--> In other words, it is _locally_ immutable as opposed to _globally_ immutable.
 
-<!-- .element: class="fragment"--> This is analogous to a C++ `const` type.
+<!-- .element: class="fragment"--> This is analogous to a C++ `const` type, except we also know it is data-race free: no _other_ actor will write to it.
 
 ----
 
@@ -439,9 +443,11 @@ Theoretically: it's fine!
 
 ----
 
-Empirically: it's fine!
+Empirically: it's fine?
 
 <!-- .element: class="fragment"--> When programmers learn Pony, it appears to take them around two weeks to get the hang of how to use reference capabilities to express their _existing_ ideas about ownership and sharing.
+
+<!-- .element: class="fragment"--> But we don't have anything more than anecdotal evidence for this.
 
 ---
 
@@ -489,7 +495,7 @@ digraph {
 
 <!-- .element: class="fragment"--> Global immutability is _deep_: __ref__ ▷ __val__ = __val__
 
-<!-- .element: class="fragment"--> Similarly, Alice sees the engaged status as __val__, because viewpoint adaptation is right-to-left: __iso__ ▷ (__ref__ ▷ __val__) = __val__
+<!-- .element: class="fragment"--> Alice sees the engaged status as __val__, because viewpoint adaptation is right-to-left: __iso__ ▷ (__ref__ ▷ __val__) = __val__
 
 ----
 
