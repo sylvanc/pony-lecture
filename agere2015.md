@@ -10,8 +10,8 @@ Imperial College London, Causality Ltd
 
 ### Motivation
 
-* <!-- .element: class="fragment"--> Combining the actor-model with shared memory eliminates the need to copy all messages between actors.
-* <!-- .element: class="fragment"--> This improves performance, but results in the possiblity of data races.
+* <!-- .element: class="fragment"--> Combining the actor-model with shared memory eliminates the need to copy messages between actors.
+* <!-- .element: class="fragment"--> This improves performance, but results in the possiblity of data-races.
 * <!-- .element: class="fragment"--> Dynamic data-race prevention (via locks or lock-free algorithms) is error-prone and carries a run-time cost.
 * <!-- .element: class="fragment"--> A static approach could eliminate all data-races with no run-time cost.
 
@@ -183,7 +183,7 @@ Let's call an opaque reference to an object that allows neither reading nor writ
 
 A __tag__ reference to an object doesn't have to make any guarantees about aliases.
 
-<!-- .element: class="fragment"--> It's ok for both writeabla and readable aliases to exist, since we won't read from the object.
+<!-- .element: class="fragment"--> It's ok for both writeable and readable aliases to exist, since we won't read from the object.
 
 ----
 
@@ -193,7 +193,7 @@ This is ok.
 digraph {
   Data [shape=box]
   Alice -> Data [label=tag]
-  Alice -> Data [label=writeable]
+  Bob -> Data [label=writeable]
   Bob
 }
 ```
@@ -206,7 +206,7 @@ And this is ok, too.
 digraph {
   Data [shape=box]
   Alice -> Data [label=tag]
-  Bob -> Data [label=writeable]
+  Alice -> Data [label=writeable]
   Bob
 }
 ```
@@ -397,6 +397,10 @@ _Write_                | __trn__      | __val__     |
 _None_                 | __ref__      | __box__     | __tag__
                        | _mutable_    | _immutable_ | _opaque_
 
+----
+
+_(If you have better names for these annotations, please let me know.)_
+
 ---
 
 ### Reference Capabilities
@@ -439,7 +443,7 @@ Theoretically: it's fine!
 
 <!-- .element: class="fragment"--> When programming in languages that aren't provably data-race free, programmers already keep a model of isolated, globally immutable and opaque data in their heads.
 
-<!-- .element: class="fragment"--> These types _reify_ for the compiler a concept that is already pervasive in real world code.
+<!-- .element: class="fragment"--> These annotations _reify_ for the compiler a concept that is already pervasive in real world code.
 
 ----
 
