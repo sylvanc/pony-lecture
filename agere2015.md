@@ -28,7 +28,7 @@ Imperial College London, Causality Ltd
 
 ### What can be safely sent in a message by reference?
 
-* <!-- .element: class="fragment"--> Actor references that allow sending messages, but not reading from or writing to the actor's state.
+* <!-- .element: class="fragment"--> References to actors that allow sending messages, but not reading from or writing to the actor's state.
 * <!-- .element: class="fragment"--> Opaque references that allow neither reading from nor writing to the object.
 * <!-- .element: class="fragment"--> Globally immutable references.
 * <!-- .element: class="fragment"--> Mutable references, as long as the sending actor is guaranteed not to retain an alias to the object that allows either reading from it or writing to it.
@@ -55,6 +55,13 @@ Expressing writeability and readability on a reference is easy.
 ---
 
 ### Let's concentrate on those aliases.
+
+----
+
+First, a terminology note:
+
+* <!-- .element: class="fragment"--> A _local_ alias is another reference to the same object, held by the _same_ actor.
+* <!-- .element: class="fragment"--> A _global_ alias is another reference to the same object, held by a _different_ actor.
 
 ----
 
@@ -217,9 +224,9 @@ The existence of a __tag__ reference to an object doesn't _deny_ the existence o
 
 ----
 
-An actor reference doesn't have to make any guarantees about aliases.
+A reference to an actor doesn't have to make any guarantees about aliases.
 
-<!-- .element: class="fragment"--> Since we interact with the actor asynchronously, an actor reference doesn't have to make any more guarantees than an opaque reference.
+<!-- .element: class="fragment"--> Since we interact with the actor asynchronously, a reference to an actor doesn't have to make any more guarantees than an opaque reference.
 
 <!-- .element: class="fragment"--> So we can type actors as __tag__ references.
 
@@ -363,7 +370,7 @@ _None_                 | __ref__      | __box__     | __tag__
 
 If we deny global read/write aiases, but allow local read aliases (but not write aliases), we have a reference that is write-unique, but not read-unique.
 
-<!-- .element: class="fragment"--> We can read from it and write from it through this reference, because we know only the same actor can read from it.
+<!-- .element: class="fragment"--> We can read from it and write to it through this reference, because we know only the same actor can read from it.
 
 <!-- .element: class="fragment"--> We can also _freeze_ it as a __val__ (globally immutable) type in the future, because we know the object is only writeable through this reference.
 
@@ -411,7 +418,7 @@ We call this system of annotations _reference capabilities_ (rcap).
 
 <!-- .element: class="fragment"--> It is inspired by _object capabilities_ (ocap), a system for building secure, principle of least authority code in object-oriented languages.
 
-<!-- .element: class="fragment"--> Existing ocap actor-model languages, such as E, AmbientTalk, and SES JavaScript, are the inspiration for Pony.
+<!-- .element: class="fragment"--> Existing ocap actor-model languages, such as __E__ and __AmbientTalk__, are the inspiration for Pony.
 
 <!-- .element: class="fragment"--> Pony is an rcap, ocap, statically typed, ahead-of-time compiled, native language.
 
