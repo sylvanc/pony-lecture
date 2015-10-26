@@ -418,9 +418,7 @@ We call this system of annotations _reference capabilities_ (rcap).
 
 <!-- .element: class="fragment"--> It is inspired by _object capabilities_ (ocap), a system for building secure, principle of least authority code in object-oriented languages.
 
-<!-- .element: class="fragment"--> Existing ocap actor-model languages, such as __E__ and __AmbientTalk__, are the inspiration for Pony.
-
-<!-- .element: class="fragment"--> Pony is an rcap, ocap, statically typed, ahead-of-time compiled, native language.
+<!-- .element: class="fragment"--> Existing ocap actor-model languages, such as __E__ and __AmbientTalk__, are the inspiration for Pony and for the reference capability type system.
 
 ----
 
