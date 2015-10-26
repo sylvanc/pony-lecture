@@ -279,7 +279,7 @@ actor PingPong
 ```pony
   be ping() => // 'be' is for 'behaviour'
     "A behaviour: we've received a ping."
-    pings = pings + 1 // Chang our state
+    pings = pings + 1 // Change our state
     partner.pong() // Send a message
 ```
 <!-- .element: class="fragment"-->
