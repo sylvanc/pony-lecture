@@ -24,6 +24,8 @@ Imperial College London, Causality Ltd
 * <!-- .element: class="fragment"--> No restriction on message shape (e.g. trees).
 * <!-- .element: class="fragment"--> Apply our system to a real-world actor-model programming language: Pony.
 
+<!-- .element: class="fragment"--> http://ponylang.org
+
 ---
 
 ### What can be safely sent in a message by reference?
@@ -65,11 +67,11 @@ First, a terminology note:
 
 ----
 
+__Isolation__
+
 Let's call a read/write-unique mutable reference to an object __iso__, to indicate an _isolated type_.
 
-----
-
-An __iso__ reference to an object must guarantee that there are no readable or writeable aliases to the object, anywhere in the program.
+<!-- .element: class="fragment"--> An __iso__ reference to an object must guarantee that there are no readable or writeable aliases to the object, anywhere in the program.
 
 <!-- .element: class="fragment"--> If such aliases existed, and we sent the object to another actor, we couldn't guarantee the __iso__ object and those aliases were held by the _same_ actor.
 
@@ -124,11 +126,11 @@ The existence of an __iso__ reference to an object must _deny_ the existence of 
 
 ----
 
+__Global Immutability__
+
 Let's call a globally immutable reference to an object __val__, to indicate a _value type_.
 
-----
-
-A __val__ reference to an object must guarantee that there are no writeable aliases to the object, anywhere in the program.
+<!-- .element: class="fragment"--> A __val__ reference to an object must guarantee that there are no writeable aliases to the object, anywhere in the program.
 
 <!-- .element: class="fragment"--> It's ok for readable references to exist, since we won't write to the object.
 
@@ -184,11 +186,11 @@ The existence of a __val__ reference to an object must _deny_ the existence of a
 
 ----
 
+__Opaqueness__
+
 Let's call an opaque reference to an object that allows neither reading nor writing __tag__, to indicate a _tag type_.
 
-----
-
-A __tag__ reference to an object doesn't have to make any guarantees about aliases.
+<!-- .element: class="fragment"--> A __tag__ reference to an object doesn't have to make any guarantees about aliases.
 
 <!-- .element: class="fragment"--> It's ok for both writeable and readable aliases to exist, since we won't read from the object.
 
@@ -240,6 +242,8 @@ Let's build a matrix of these deny properties.
 
 ----
 
+<!-- .element: data-transition="fade-out"-->
+
 An __iso__ reference denies local and global read and write aliases.
 
 | Deny global | aliases | |
@@ -250,6 +254,8 @@ _Write_                |              |           |
 _None_                 |              |           |
 
 ----
+
+<!-- .element: data-transition="fade-in fade-out"-->
 
 A __val__ reference denies local and global write aliases.
 
@@ -262,6 +268,8 @@ _None_                 |              |           |
 
 ----
 
+<!-- .element: data-transition="fade-in fade-out"-->
+
 A __tag__ reference denies nothing.
 
 | Deny global | aliases | |
@@ -272,6 +280,8 @@ _Write_                |              | __val__   |
 _None_                 |              |           | __tag__
 
 ----
+
+<!-- .element: data-transition="fade-in slide-out"-->
 
 That's interesting! A type is _sendable_ when it guarantees locally what it guarantees globally.
 
@@ -458,6 +468,14 @@ Empirically: it's fine?
 
 <!-- .element: class="fragment"--> But we don't have anything more than anecdotal evidence for this.
 
+----
+
+Good defaults reduce the annotation load.
+
+<!-- .element: class="fragment"--> In Pony, each type can have its own default rcap.
+
+<!-- .element: class="fragment"--> As a result, roughly 90% of types in the standard library have no rcap annotation.
+
 ---
 
 ### How do reference capabilities compose?
@@ -469,12 +487,12 @@ Alice has a bicycle, which has brakes, which might be engaged.
 ```viz
 digraph {
   rankdir=LR
-  Bicycle [shape=box]
-  Brakes [shape=box]
+  "bike: Bicycle" [shape=box]
+  "brakes: Brakes" [shape=box]
   "engaged: Bool" [shape=box]
-  Alice -> Bicycle [label=iso]
-  Bicycle -> Brakes [label=ref]
-  Brakes -> "engaged: Bool" [label=val]
+  Alice -> "bike: Bicycle" [label=iso]
+  "bike: Bicycle" -> "brakes: Brakes" [label=ref]
+  "brakes: Brakes" -> "engaged: Bool" [label=val]
 }
 ```
 
@@ -491,12 +509,12 @@ The brakes see their engaged status as __val__.
 ```viz
 digraph {
   rankdir=LR
-  Bicycle [shape=box]
-  Brakes [shape=box]
+  "bike: Bicycle" [shape=box]
+  "brakes: Brakes" [shape=box]
   "engaged: Bool" [shape=box]
-  Alice -> Bicycle [label=iso]
-  Bicycle -> Brakes [label=ref]
-  Brakes -> "engaged: Bool" [label=val]
+  Alice -> "bike: Bicycle" [label=iso]
+  "bike: Bicycle" -> "brakes: Brakes" [label=ref]
+  "brakes: Brakes" -> "engaged: Bool" [label=val]
 }
 ```
 
@@ -513,12 +531,12 @@ The bicycle sees its brakes as __ref__.
 ```viz
 digraph {
   rankdir=LR
-  Bicycle [shape=box]
-  Brakes [shape=box]
+  "bike: Bicycle" [shape=box]
+  "brakes: Brakes" [shape=box]
   "engaged: Bool" [shape=box]
-  Alice -> Bicycle [label=iso]
-  Bicycle -> Brakes [label=ref]
-  Brakes -> "engaged: Bool" [label=val]
+  Alice -> "bike: Bicycle" [label=iso]
+  "bike: Bicycle" -> "brakes: Brakes" [label=ref]
+  "brakes: Brakes" -> "engaged: Bool" [label=val]
 }
 ```
 
@@ -552,7 +570,7 @@ __tag__    | ⊥       | ⊥       | ⊥       | ⊥       | ⊥       | ⊥
 
 ----
 
-Similarly, there are rules as to what rcaps can be written into the fields of an object without violating it's rcap.
+Similarly, there are rules as to what rcaps can be written into the fields of an object without violating its rcap.
 
 <!-- .element: class="fragment"--> This means not violating read/write uniqueness for an __iso__ and not violating write uniqueness for a __trn__.
 
