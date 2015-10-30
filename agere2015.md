@@ -378,7 +378,7 @@ _None_                 | __ref__      | __box__     | __tag__
 
 ----
 
-If we deny global read/write aiases, but allow local read aliases (but not write aliases), we have a reference that is write-unique, but not read-unique.
+If we deny global read/write aliases, but allow local read aliases (but not write aliases), we have a reference that is write-unique, but not read-unique.
 
 <!-- .element: class="fragment"--> We can read from it and write to it through this reference, because we know only the same actor can read from it.
 
