@@ -32,8 +32,6 @@ The Pony runtime can help you solve hard concurrency problems
 
 You might be able to use Pony for fintech in production now
 
-TODO: Martin on algos, not systemic pauses, this is systemic
-
 ----
 
 ### My talks are usually a bit...
