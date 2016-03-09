@@ -32,6 +32,8 @@ The Pony runtime can help you solve hard concurrency problems
 
 You might be able to use Pony for fintech in production now
 
+TODO: Martin on algos, not systemic pauses, this is systemic
+
 ----
 
 ### My talks are usually a bit...
@@ -131,6 +133,7 @@ Some examples:
 * Aeron
 * Cap'n Proto
 * OpenOnload
+* 29West LBM
 
 ----
 
@@ -412,9 +415,17 @@ This is used to enforce the golden rule of data-race freedom:
 
 ----
 
-### Adrian Colyer from the Morning Paper
+### Adrian's write up
 
-Local and global rcap compatibility
+**the morning paper**
+
+_Deny Capabilities for Safe, Fast Actors_
+
+http://blog.acolyer.org/2016/02/17/deny-capabilities/
+
+----
+
+### Adrian's local and global rcap compatibility chart
 
 ![Deny Capabilities](img/pony-deny-capabilities.png)
 
@@ -817,9 +828,121 @@ Should a scheduler thread with only "deprioritised" actors try to steal work?
 
 ### Fully concurrent GC with no stop-the-world
 
+GC'ing an actor heap
+
+GC'ing things shared across heaps
+
+GC'ing actors themselves
+
 ----
 
-### TODO
+### GC'ing an actor heap
+
+Actors GC their own heaps independent of other actors
+
+Mark-and-don't sweep algorithm
+
+O(n) on reachable graph
+
+Unreachable memory has no impact
+
+----
+
+### What actor heap GC doesn't need
+
+No safepoints
+
+No read or write barriers
+
+No card table marking
+
+No compacting, so no pointer fixups
+
+----
+
+### GC'ing objects shared across heaps
+
+Rcaps allows isolated (iso), immutable (val), and opaque (tag) objects to be safely passed by reference (zero-copy) between actors
+
+Objects in messages or reachable by other actors must be protected from premature collection
+
+----
+
+### Use a message protocol
+
+Deferred distributed weighted reference counting
+
+The shape of the heap does not influence the reference count
+
+Trace objects reachable from a message on send and receive
+
+No round trips or acknowledgement messages
+
+Actors can still independently collect heaps without coordination
+
+----
+
+### Shared object GC is a distributed system
+
+An actor can't know what other actors can reach an object it has allocated
+
+Or what undelivered messages the object may be reachable from
+
+The object must not be collected prematurely but must be collected in a timely manner
+
+Teaser: this has been extended to the distributed runtime
+
+----
+
+### Immutability and tracing
+
+Isolated (iso) objects must trace their fields in messages
+
+Because they can be mutated by an actor other than the allocator
+
+Immutable (val) objects need not be traced, either in message or by any non-allocating actor when reached during heap GC
+
+Because the allocator can safely be responsible for tracing an immutable graph
+
+Sharing an immutable object graph amongst N actors does not increase aggregate GC times
+
+----
+
+### Adrian's write up
+
+_Ownership and Reference Counting Based Garbage Collection in the Actor World_
+
+http://blog.acolyer.org/2016/02/18/ownership-and-reference-counting-based-garbage-collection-in-the-actor-world/
+
+----
+
+### GC'ing actors
+
+An extension of the same protocol allows actors themselves to be GC'd
+
+It's an even more complex distributed system
+
+A cycle detector (implemented as a system actor) is required
+
+Plus a CNF-ACK protocol that can cheaply determine that a view of an actor's topology received in the past was a true view of the global state when it was recieved
+
+---
+
+### Further work
+
+**VAPOURWARE ALERT**
+
+Distributed Pony
+
+Weak dependent types
+
+Reflection
+
+Meta-programming
+
+Hot code loading
+
+REPL
 
 ---
 
