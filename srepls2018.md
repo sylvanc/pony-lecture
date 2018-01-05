@@ -359,7 +359,7 @@ How can we leverage modern and future hardware?
 
 How can we convince the hardware gods we can produce programming models that don't need to be lied to?
 
-Would eliminating unhealthy pressure to handle fault isolation in hardware for old programs written in old languages help with hardware security?
+Would eliminating unhealthy pressure to handle fault isolation in hardware for legacy programs written in legacy languages help with hardware security?
 
 Are distributed systems a way in?
 
